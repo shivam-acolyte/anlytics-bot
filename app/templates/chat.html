@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}AI Analyst Chatbot | TrackingBot Analytics{% endblock %}
+
+{% block content %}
+<div class="chat-layout">
+  <!-- Left Sidebar: Quick Prompts & Context -->
+  <aside class="chat-sidebar">
+    <!-- Website Selector in Chat -->
+    <div style="margin-bottom:1.5rem;">
+      <h4 class="sidebar-title">🌐 Select Website</h4>
+      <div class="website-btn-group" style="width:100%;display:flex;flex-direction:column;gap:8px;margin-top:10px;">
+        <button class="website-choice-btn active" data-platform="living" id="chat-choice-living" style="width:100%;">
+          <span class="site-icon">🏢</span>
+          <div class="site-info-text">
+            <span class="site-name">Acolyte Living</span>
+            <span class="site-tag">PostgreSQL (647k+ events)</span>
+          </div>
+        </button>
+        <button class="website-choice-btn" data-platform="startupflora" id="chat-choice-startupflora" style="width:100%;">
+          <span class="site-icon">🌸</span>
+          <div class="site-info-text">
+            <span class="site-name">StartupFlora</span>
+            <span class="site-tag">MySQL (391k+ events)</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <h4 class="sidebar-title">⚡ Quick Analysis Prompts</h4>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
+        <button class="preset-chip">📉 When is user traffic lowest?</button>
+        <button class="preset-chip">🔥 What are our peak active hours?</button>
+        <button class="preset-chip">🌐 Show multi-website traffic distribution</button>
+        <button class="preset-chip">📊 Compare Sunday vs Wednesday activity</button>
+        <button class="preset-chip">📄 What are the top 5 visited pages?</button>
+        <button class="preset-chip">⚡ Break down conversion events</button>
+      </div>
+    </div>
+
+    <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border-subtle);">
+      <h4 class="sidebar-title">🗄️ Active Database Context</h4>
+      <p id="chat-db-context-desc" style="font-size:0.78rem;color:var(--text-dim);margin-top:6px;line-height:1.4;">
+        Directly querying PostgreSQL <code>tracking_events</code> with multi-website support.
+      </p>
+    </div>
+  </aside>
+
+  <!-- Right: Chat Console -->
+  <section class="chat-main">
+    <div id="chat-feed" class="chat-feed">
+      <!-- Welcome Message -->
+      <div class="chat-message bot">
+        <div class="chat-avatar bot">🤖</div>
+        <div class="chat-bubble">
+          <h3 style="font-size:1.05rem;color:#fff;margin-bottom:6px;">Hello! I am your AI Analytics Assistant.</h3>
+          <p style="margin-bottom:8px;">
+            I have direct access to your tracking database. I can answer complex questions about user traffic, analyze low/peak periods, compare multiple websites, and return visual charts or exact SQL queries.
+          </p>
+          <p style="font-size:0.85rem;color:#94a3b8;">
+            Try asking: <strong>"Which time period has the lowest user traffic?"</strong> or click any prompt on the left.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Input Bar -->
+    <div class="chat-input-area">
+      <input 
+        type="text" 
+        id="chat-input" 
+        class="chat-input" 
+        placeholder="Ask anything about your tracking data (e.g., when are users lowest, top pages, site comparison)..." 
+      />
+      <button id="btn-send-chat" class="btn-send">
+        <span>Send</span> ➔
+      </button>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/chat.js"></script>
+{% endblock %}

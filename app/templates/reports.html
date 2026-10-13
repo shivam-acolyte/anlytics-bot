@@ -1,0 +1,551 @@
+{% extends "base.html" %}
+
+{% block title %}Reports & Visuals | TrackingBot Analytics{% endblock %}
+
+{% block content %}
+<!-- Top Global Filter Bar with Platform & UTM Selectors -->
+<div class="filter-bar">
+  <div class="filter-controls-row">
+    <div class="filter-group">
+      <div class="filter-label">🌐 Website:</div>
+      <select id="platform-select" class="select-control" style="font-weight:600;min-width:185px;">
+        <option value="living">🏢 Acolyte Living (PostgreSQL)</option>
+        <option value="startupflora">🌸 StartupFlora (MySQL)</option>
+      </select>
+
+      <div class="filter-label" style="margin-left:0.35rem;">🎯 UTM:</div>
+      <select id="utm-select" class="select-control" style="min-width:215px;">
+        <option value="all">🎯 All Traffic / Organic</option>
+      </select>
+
+      <div class="filter-label" style="margin-left:0.35rem;">🏷️ Subdomain:</div>
+      <select id="site-select" class="select-control">
+        <option value="all">Loading websites...</option>
+      </select>
+
+      <div class="filter-label" style="margin-left:0.35rem;">📅 Range:</div>
+      <select id="days-select" class="select-control">
+        <option value="7">Last 7 Days</option>
+        <option value="30" selected>Last 30 Days</option>
+        <option value="60">Last 60 Days</option>
+        <option value="90">Last 90 Days</option>
+      </select>
+    </div>
+
+    <!-- Direct Page URL Lookup -->
+    <div class="direct-url-group">
+      <div class="url-input-wrapper">
+        <span class="url-prefix-icon">🔗</span>
+        <input 
+          type="text" 
+          id="direct-page-url-input" 
+          class="direct-url-input" 
+          placeholder="Enter page URL (e.g. /blog/tnpds-status)..." 
+        />
+        <button id="btn-direct-page-analyze" class="btn-direct-analyze" title="Open Detailed Info for this Page">
+          <span>📊</span> Detailed Info
+        </button>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <button id="btn-refresh-data" class="btn-refresh">
+        <span>🔄</span> Refresh Cache
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Key Performance Indicators (KPIs) -->
+<div class="kpi-grid">
+  <!-- Total Events -->
+  <div class="kpi-card" style="--accent-color: #6366f1;">
+    <div class="kpi-header">
+      <span class="kpi-title">Total Tracking Events</span>
+      <div class="kpi-icon" style="color:#818cf8;">⚡</div>
+    </div>
+    <div class="kpi-value" id="kpi-events">--</div>
+    <div class="kpi-subtitle">All interactions logged</div>
+  </div>
+
+  <!-- Unique Visitors -->
+  <div class="kpi-card" style="--accent-color: #06b6d4;">
+    <div class="kpi-header">
+      <span class="kpi-title">Unique Active Users</span>
+      <div class="kpi-icon" style="color:#22d3ee;">👥</div>
+    </div>
+    <div class="kpi-value" id="kpi-users">--</div>
+    <div class="kpi-subtitle">Unique anonymous & identified users</div>
+  </div>
+
+  <!-- Total Sessions -->
+  <div class="kpi-card" style="--accent-color: #10b981;">
+    <div class="kpi-header">
+      <span class="kpi-title">Total Sessions</span>
+      <div class="kpi-icon" style="color:#34d399;">⏱️</div>
+    </div>
+    <div class="kpi-value" id="kpi-sessions">--</div>
+    <div class="kpi-subtitle">Distinct browsing sessions</div>
+  </div>
+
+  <!-- Lowest Traffic Window -->
+  <div class="kpi-card" style="--accent-color: #ef4444;">
+    <div class="kpi-header">
+      <span class="kpi-title">Lowest User Period</span>
+      <div class="kpi-icon" style="color:#f87171;">📉</div>
+    </div>
+    <div class="kpi-value" id="kpi-lowest-slot" style="font-size:1.45rem;">--</div>
+    <div class="kpi-subtitle">
+      <span class="badge-low" id="kpi-dead-zone">04:00 - 10:00 IST</span>
+      <span id="kpi-lowest-day" style="margin-left:4px;">Sunday</span>
+    </div>
+  </div>
+</div>
+
+<!-- Embedded On-Page Report Chart Bot Banner -->
+<div class="chart-bot-banner">
+  <div class="chart-bot-info">
+    <div class="chart-bot-avatar">🤖</div>
+    <div>
+      <h3 style="font-size:1.05rem;font-weight:700;color:#ffffff;font-family:var(--font-heading);">
+        On-Page Report Chart Bot
+      </h3>
+      <p style="font-size:0.82rem;color:var(--text-muted);">
+        Ask to generate custom charts on the fly for <strong id="bot-active-platform-name" style="color:#818cf8;">Acolyte Living</strong> (e.g. <em>"Compare Sunday vs Wednesday by hour"</em>, <em>"Show top events"</em>, or <em>"Traffic by country"</em>).
+      </p>
+    </div>
+  </div>
+
+  <div class="chart-bot-input-group">
+    <input 
+      type="text" 
+      id="chart-bot-input" 
+      class="chart-bot-input" 
+      placeholder="Type prompt to plot visual (e.g. compare Sunday vs Monday by hour)..." 
+    />
+    <button id="btn-generate-chart" class="btn-generate">
+      <span>✨</span> Generate Visual
+    </button>
+  </div>
+</div>
+
+<!-- Dynamic Injected Charts Container (Rendered by On-Page Bot) -->
+<div id="dynamic-charts-container" class="dynamic-charts-container"></div>
+
+<!-- 24x7 Traffic & Dead Zone Heatmap -->
+<div class="card-visual" style="margin-bottom: 1.75rem;">
+  <div class="card-header">
+    <div>
+      <h3 class="card-title">🔥 24×7 User Activity & Dead Zone Heatmap</h3>
+      <p class="card-description">
+        Visualizing user density by Day of Week × Hour of Day (IST). Red highlights lowest periods; green highlights peak traffic.
+      </p>
+    </div>
+    <div class="heatmap-legend">
+      <span>Low / Dead Zone</span>
+      <div class="legend-bar">
+        <div class="legend-box heat-trough" title="Lowest Trough"></div>
+        <div class="legend-box heat-0"></div>
+        <div class="legend-box heat-1"></div>
+        <div class="legend-box heat-2"></div>
+        <div class="legend-box heat-3"></div>
+        <div class="legend-box heat-4"></div>
+        <div class="legend-box heat-5"></div>
+        <div class="legend-box heat-peak" title="Peak Hours"></div>
+      </div>
+      <span>Peak</span>
+    </div>
+  </div>
+
+  <div class="heatmap-container">
+    <table class="heatmap-table">
+      <thead>
+        <tr>
+          <th style="width:90px;"></th>
+          {% for h in range(24) %}
+            <th>{{ "%02d:00"|format(h) }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody id="heatmap-body">
+        <tr><td colspan="25" style="text-align:center;padding:20px;color:#94a3b8;">Loading heatmap data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Granular Deep-Analysis Toolbar -->
+<div class="card-visual" style="margin-bottom: 1.75rem; padding: 1.1rem 1.5rem;">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:1.2rem;">🔬</span>
+        <h3 class="card-title" style="margin:0;">Deep-Dive Time Analysis</h3>
+        <span class="brand-badge" id="current-granularity-badge">By Days</span>
+      </div>
+      <p class="card-description">Switch between granular time dimensions to pinpoint peak hours, dead zones, and intra-hour minute patterns.</p>
+    </div>
+
+    <!-- Granularity Action Buttons -->
+    <div class="granularity-btn-group" id="granularity-btn-group">
+      <button class="btn-granularity active" data-granularity="day">
+        <span>📅</span> By Days
+      </button>
+      <button class="btn-granularity" data-granularity="hour">
+        <span>⏱️</span> By Hours (24h)
+      </button>
+      <button class="btn-granularity" data-granularity="30min">
+        <span>⏳</span> By 30-Min Slots
+      </button>
+      <button class="btn-granularity" data-granularity="15min">
+        <span>⚡</span> By 15-Min Slots
+      </button>
+      <button class="btn-granularity" data-granularity="minute">
+        <span>🔍</span> By Minute (:00-:59)
+      </button>
+    </div>
+  </div>
+
+  <!-- Granular Summary Strip -->
+  <div id="granular-summary-strip" style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;margin-top:1rem;padding-top:0.85rem;border-top:1px solid var(--border-subtle);font-size:0.85rem;">
+    <div><span style="color:var(--text-dim);">Peak Slot:</span> <strong id="gran-peak-slot" style="color:#10b981;">--</strong> (<span id="gran-peak-users" style="color:#fff;">--</span> users)</div>
+    <div><span style="color:var(--text-dim);">Lowest / Dead Slot:</span> <strong id="gran-trough-slot" style="color:#ef4444;">--</strong> (<span id="gran-trough-users" style="color:#fff;">--</span> users)</div>
+    <div><span style="color:var(--text-dim);">Avg / Slot:</span> <strong id="gran-avg-users" style="color:#38bdf8;">--</strong> users</div>
+    <div style="margin-left:auto;font-size:0.8rem;color:var(--text-dim);">Timezone: <span style="color:#818cf8;">Asia/Kolkata (IST)</span></div>
+  </div>
+</div>
+
+<!-- Primary Charts: Dynamic Timeline & Event Breakdown -->
+<div class="charts-grid">
+  <!-- Dynamic Timeline (Updates based on Granularity buttons) -->
+  <div class="card-visual">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title" id="timeline-chart-title">📈 Daily Traffic Timeline</h3>
+        <p class="card-description" id="timeline-chart-desc">Active visitors and event volume over the selected period.</p>
+      </div>
+    </div>
+    <div class="chart-wrapper">
+      <canvas id="chart-daily-trends"></canvas>
+    </div>
+  </div>
+
+  <!-- Events Breakdown -->
+  <div class="card-visual">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">⚡ Tracking Events Funnel</h3>
+        <p class="card-description">Distribution of visitor actions and interaction types.</p>
+      </div>
+    </div>
+    <div class="chart-wrapper">
+      <canvas id="chart-events-breakdown"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Section: Top Pages & Traffic Referrers -->
+<div class="charts-grid" style="grid-template-columns: 1.15fr 0.85fr;">
+  <!-- Top Pages (Clickable for Deep Analytics) -->
+  <div class="card-visual">
+    <div class="card-header" style="flex-wrap:wrap;gap:0.75rem;">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <h3 class="card-title">📄 Most Visited Pages</h3>
+          <span class="brand-badge" style="background:rgba(6,182,212,0.15);color:#22d3ee;border-color:rgba(6,182,212,0.3);">
+            Interactive Deep Analytics
+          </span>
+        </div>
+        <p class="card-description">Click any row or "Deep Analytics" button to inspect 360° analytics, curves, and conversions.</p>
+      </div>
+
+      <!-- Real-time Filter/Search Input for Pages -->
+      <div class="pages-filter-wrapper">
+        <input 
+          type="text" 
+          id="pages-filter-input" 
+          class="pages-filter-input" 
+          placeholder="Filter or search pages..." 
+        />
+      </div>
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table class="data-table interactive-table">
+        <thead>
+          <tr>
+            <th>Page URL</th>
+            <th>Views</th>
+            <th>Users</th>
+            <th style="text-align:right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="table-top-pages">
+          <tr><td colspan="4" style="text-align:center;color:#94a3b8;">Loading pages...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Traffic Sources / Referrers -->
+  <div class="card-visual">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">🌐 Top Traffic Sources & Referrers</h3>
+        <p class="card-description">Domains driving visitors to your web properties.</p>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Source Domain</th>
+            <th>Events</th>
+            <th>Visitors</th>
+          </tr>
+        </thead>
+        <tbody id="table-referrers">
+          <tr><td colspan="3" style="text-align:center;color:#94a3b8;">Loading referrers...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     PAGE DEEP-DIVE MODAL DIALOG (Comprehensive 360° Page Suite)
+     ========================================================================== -->
+<div id="page-deepdive-modal" class="modal-backdrop" style="display:none;">
+  <div class="modal-dialog">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:12px;max-width:85%;">
+        <div class="brand-icon" style="width:44px;height:44px;font-size:1.4rem;flex-shrink:0;">📊</div>
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <h3 class="card-title" id="modal-page-title" style="font-size:1.25rem;">Deep Page Analytics</h3>
+            <span class="brand-badge" id="modal-platform-badge">Acolyte Living</span>
+            <span class="brand-badge" style="background:rgba(16,185,129,0.15);color:#34d399;border-color:rgba(16,185,129,0.3);">
+              360° View
+            </span>
+          </div>
+          <code id="modal-page-url" style="color:#38bdf8;font-size:0.88rem;word-break:break-all;display:block;margin-top:2px;">--</code>
+        </div>
+      </div>
+      <button id="modal-close-btn" class="modal-close-btn" title="Close (Esc)">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- 6 KPI Cards Grid -->
+      <div class="modal-kpi-grid">
+        <div class="kpi-card" style="padding:0.9rem 1.1rem;--accent-color:#6366f1;">
+          <div class="kpi-title">Total Views</div>
+          <div class="kpi-value" id="modal-kpi-views" style="font-size:1.55rem;">--</div>
+          <div class="kpi-subtitle">Total hits logged</div>
+        </div>
+        <div class="kpi-card" style="padding:0.9rem 1.1rem;--accent-color:#06b6d4;">
+          <div class="kpi-title">Unique Visitors</div>
+          <div class="kpi-value" id="modal-kpi-users" style="font-size:1.55rem;">--</div>
+          <div class="kpi-subtitle">Unique individuals</div>
+        </div>
+        <div class="kpi-card" style="padding:0.9rem 1.1rem;--accent-color:#10b981;">
+          <div class="kpi-title">Total Sessions</div>
+          <div class="kpi-value" id="modal-kpi-sessions" style="font-size:1.55rem;">--</div>
+          <div class="kpi-subtitle">Distinct visits</div>
+        </div>
+        <div class="kpi-card" style="padding:0.9rem 1.1rem;--accent-color:#f59e0b;">
+          <div class="kpi-title">Peak Hour Slot</div>
+          <div class="kpi-value" id="modal-kpi-peakhour" style="font-size:1.2rem;color:#fcd34d;">--</div>
+          <div class="kpi-subtitle">Busiest time of day</div>
+        </div>
+        <div class="kpi-card" style="padding:0.9rem 1.1rem;--accent-color:#8b5cf6;">
+          <div class="kpi-title">Interaction Rate</div>
+          <div class="kpi-value" id="modal-kpi-conversion" style="font-size:1.55rem;color:#c084fc;">--%</div>
+          <div class="kpi-subtitle">Actions per pageview</div>
+        </div>
+        <div class="kpi-card" style="padding:0.9rem 1.1rem;--accent-color:#38bdf8;">
+          <div class="kpi-title">Last Activity</div>
+          <div class="kpi-value" id="modal-kpi-lastseen" style="font-size:1.05rem;color:#e2e8f0;">--</div>
+          <div class="kpi-subtitle" id="modal-kpi-firstseen">First seen: --</div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs Bar -->
+      <div class="modal-tabs-bar">
+        <button class="modal-tab-btn active" data-tab="tab-curves">
+          <span>📈</span> Traffic Curves
+        </button>
+        <button class="modal-tab-btn" data-tab="tab-actions">
+          <span>⚡</span> User Actions & Conversions
+        </button>
+        <button class="modal-tab-btn" data-tab="tab-sources">
+          <span>🌐</span> Inbound Sources & UTM
+        </button>
+        <button class="modal-tab-btn" data-tab="tab-audience">
+          <span>📱</span> Devices & Audience
+        </button>
+        <button class="modal-tab-btn" data-tab="tab-activity">
+          <span>🕒</span> Live Activity Stream
+        </button>
+      </div>
+
+      <!-- TAB 1: Traffic Curves -->
+      <div class="modal-tab-content active" id="tab-curves">
+        <div class="modal-subbar">
+          <span style="font-size:0.9rem;color:var(--text-muted);font-weight:600;">Time Dimension:</span>
+          <div class="granularity-btn-group" id="modal-curves-toggle-group">
+            <button class="btn-granularity active" data-curve-type="daily">
+              <span>📅</span> Daily Trend (30d)
+            </button>
+            <button class="btn-granularity" data-curve-type="hourly">
+              <span>⏱️</span> 24h Hourly Curve
+            </button>
+            <button class="btn-granularity" data-curve-type="15min">
+              <span>⚡</span> 15-Minute Slots
+            </button>
+            <button class="btn-granularity" data-curve-type="dow">
+              <span>📆</span> Day of Week
+            </button>
+          </div>
+        </div>
+
+        <div class="card-visual" style="background:rgba(9,13,22,0.6);margin-bottom:0;">
+          <div class="chart-wrapper" style="min-height:300px;">
+            <canvas id="modal-chart-curves"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: User Actions & Conversions -->
+      <div class="modal-tab-content" id="tab-actions">
+        <div class="charts-grid" style="grid-template-columns: 1fr 1fr; gap:1.25rem;">
+          <div class="card-visual" style="background:rgba(9,13,22,0.6);">
+            <h4 style="font-size:0.95rem;color:#fff;margin-bottom:0.75rem;">⚡ Actions Distribution</h4>
+            <div class="chart-wrapper" style="min-height:260px;">
+              <canvas id="modal-chart-actions"></canvas>
+            </div>
+          </div>
+
+          <div class="card-visual" style="background:rgba(9,13,22,0.6);">
+            <h4 style="font-size:0.95rem;color:#fff;margin-bottom:0.75rem;">📋 Action Event Metrics</h4>
+            <div style="overflow-x:auto;max-height:280px;">
+              <table class="data-table">
+                <thead>
+                  <tr><th>Event Name</th><th>Count</th><th>Users</th></tr>
+                </thead>
+                <tbody id="modal-table-events">
+                  <tr><td colspan="3" style="text-align:center;color:#64748b;">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Sources & UTM Campaigns -->
+      <div class="modal-tab-content" id="tab-sources">
+        <div class="charts-grid" style="grid-template-columns: 1fr 1fr; gap:1.25rem;">
+          <div class="card-visual" style="background:rgba(9,13,22,0.6);">
+            <h4 style="font-size:0.95rem;color:#fff;margin-bottom:0.75rem;">🌐 Top Inbound Referrers</h4>
+            <div style="overflow-x:auto;max-height:280px;">
+              <table class="data-table">
+                <thead>
+                  <tr><th>Referrer Source</th><th>Hits</th><th>Users</th></tr>
+                </thead>
+                <tbody id="modal-table-referrers">
+                  <tr><td colspan="3" style="text-align:center;color:#64748b;">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card-visual" style="background:rgba(9,13,22,0.6);">
+            <h4 style="font-size:0.95rem;color:#fff;margin-bottom:0.75rem;">🎯 UTM Campaigns & Mediums</h4>
+            <div style="overflow-x:auto;max-height:280px;">
+              <table class="data-table">
+                <thead>
+                  <tr><th>Campaign</th><th>Source</th><th>Count</th></tr>
+                </thead>
+                <tbody id="modal-table-utm">
+                  <tr><td colspan="3" style="text-align:center;color:#64748b;">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: Devices & Audience -->
+      <div class="modal-tab-content" id="tab-audience">
+        <div class="charts-grid" style="grid-template-columns: 1fr 1fr 1fr; gap:1.25rem;">
+          <div class="card-visual" style="background:rgba(9,13,22,0.6);">
+            <h4 style="font-size:0.95rem;color:#fff;margin-bottom:0.75rem;">📱 Device Categories</h4>
+            <div class="chart-wrapper" style="min-height:240px;">
+              <canvas id="modal-chart-devices"></canvas>
+            </div>
+          </div>
+
+          <div class="card-visual" style="background:rgba(9,13,22,0.6);">
+            <h4 style="font-size:0.95rem;color:#fff;margin-bottom:0.75rem;">🌐 Top Browsers</h4>
+            <div style="overflow-x:auto;max-height:260px;">
+              <table class="data-table">
+                <thead>
+                  <tr><th>Browser</th><th>Events</th></tr>
+                </thead>
+                <tbody id="modal-table-browsers">
+                  <tr><td colspan="2" style="text-align:center;color:#64748b;">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card-visual" style="background:rgba(9,13,22,0.6);">
+            <h4 style="font-size:0.95rem;color:#fff;margin-bottom:0.75rem;">🌍 Geographic Countries</h4>
+            <div style="overflow-x:auto;max-height:260px;">
+              <table class="data-table">
+                <thead>
+                  <tr><th>Country</th><th>Visits</th></tr>
+                </thead>
+                <tbody id="modal-table-countries">
+                  <tr><td colspan="2" style="text-align:center;color:#64748b;">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: Live Activity Stream -->
+      <div class="modal-tab-content" id="tab-activity">
+        <div class="card-visual" style="background:rgba(9,13,22,0.6);margin-bottom:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+            <h4 style="font-size:0.95rem;color:#fff;margin:0;">⚡ Live Stream (Last 50 Events for this Page)</h4>
+            <span class="brand-badge">Real-Time</span>
+          </div>
+          <div style="overflow-x:auto;max-height:360px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Event</th>
+                  <th>Session ID</th>
+                  <th>Device</th>
+                  <th>Referrer</th>
+                  <th>Data Snippet</th>
+                </tr>
+              </thead>
+              <tbody id="modal-table-recent">
+                <tr><td colspan="6" style="text-align:center;color:#64748b;">Loading stream...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/reports.js"></script>
+{% endblock %}

@@ -1,0 +1,561 @@
+{% extends "base.html" %}
+
+{% block title %}Page Deep Dive Analytics | TrackingBot{% endblock %}
+
+{% block content %}
+<!-- Back to Reports & Breadcrumb Strip -->
+<div class="page-analytics-topbar">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <a href="/reports" class="btn-back-reports" title="Return to General Analytics Dashboard">
+      <span>←</span> Back to Reports
+    </a>
+    <div class="page-breadcrumb">
+      <span>Reports</span> <span class="breadcrumb-sep">/</span>
+      <span>Page Analytics</span> <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-active" id="breadcrumb-page-url">{{ target_url or "Select Page" }}</span>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span class="brand-badge" id="page-platform-badge" style="font-size:0.8rem;padding:4px 10px;">
+      {% if platform == 'startupflora' %}🌸 StartupFlora (MySQL){% else %}🏢 Acolyte Living (PostgreSQL){% endif %}
+    </span>
+    <span class="brand-badge" style="background:rgba(16,185,129,0.15);color:#34d399;border-color:rgba(16,185,129,0.3);font-size:0.8rem;padding:4px 10px;">
+      360° Detailed Suite
+    </span>
+  </div>
+</div>
+
+<!-- Page Hero Identity Header with Searchable Combobox Dropdown -->
+<div class="card-visual page-hero-card">
+  <div class="page-hero-content">
+    <div class="page-hero-icon">📄</div>
+    <div style="flex:1;min-width:280px;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <h2 class="page-hero-title">Page Analytics Deep Dive</h2>
+        <span class="badge-status-live"><span class="status-dot"></span> Active Tracking</span>
+      </div>
+      <div class="page-hero-url-row">
+        <code id="page-hero-url" class="page-url-code">{{ target_url or "Loading page URL..." }}</code>
+        <button id="btn-copy-url" class="btn-copy-action" title="Copy URL to clipboard">
+          <span>📋</span> Copy
+        </button>
+        <a id="btn-visit-url" href="{{ target_url or '#' }}" target="_blank" rel="noopener noreferrer" class="btn-visit-action" title="Open page in new browser tab">
+          <span>🔗</span> Visit Page
+        </a>
+      </div>
+    </div>
+
+    <!-- Searchable Combobox Dropdown for Page URLs -->
+    <div class="page-switcher-box">
+      <div class="filter-label" style="margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;">
+        <span>🔍 Search / Select Target Page:</span>
+        <span class="combobox-badge" id="combobox-page-count">Loading pages...</span>
+      </div>
+      <div class="page-combobox-wrapper" id="page-combobox-wrapper">
+        <div class="combobox-input-container">
+          <span class="combobox-search-icon">🔎</span>
+          <input 
+            type="text" 
+            id="page-search-input" 
+            class="combobox-input" 
+            placeholder="Search URL or type custom path (e.g. /properties)..." 
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button type="button" id="btn-combobox-clear" class="btn-combobox-action" title="Clear input" style="display:none;">✕</button>
+          <button type="button" id="btn-combobox-toggle" class="btn-combobox-action" title="Toggle pages dropdown">▼</button>
+          <button type="button" id="btn-page-search-go" class="btn-page-search-go" title="Analyze this URL">
+            Analyze
+          </button>
+        </div>
+        <div id="page-search-dropdown" class="page-combobox-dropdown" style="display:none;">
+          <div class="combobox-dropdown-header">
+            <span class="dropdown-header-title">Tracked Page URLs</span>
+            <span class="dropdown-header-hint">Click to analyze or type to filter</span>
+          </div>
+          <div class="combobox-dropdown-list" id="page-combobox-list">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detailed Filter Controls Bar with Date-to-Date & Range Presets -->
+<div class="filter-bar">
+  <div class="filter-controls-row" style="flex-wrap:wrap;gap:12px;align-items:center;">
+    <div class="filter-group" style="flex-wrap:wrap;gap:10px;align-items:center;">
+      <div class="filter-item">
+        <label class="filter-label">🌐 Website:</label>
+        <select id="page-platform-select" class="select-control" style="font-weight:600;min-width:185px;">
+          <option value="living" {% if platform != 'startupflora' %}selected{% endif %}>🏢 Acolyte Living (PostgreSQL)</option>
+          <option value="startupflora" {% if platform == 'startupflora' %}selected{% endif %}>🌸 StartupFlora (MySQL)</option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <label class="filter-label">🎯 UTM:</label>
+        <select id="page-utm-select" class="select-control" style="min-width:190px;">
+          <option value="all">🎯 All Traffic / Organic</option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <label class="filter-label">🏷️ Domain:</label>
+        <select id="page-site-select" class="select-control" style="min-width:170px;">
+          <option value="all">🌐 All Domains</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Date Range & Date-to-Date Controls -->
+    <div class="filter-group date-filter-group" style="flex-wrap:wrap;gap:8px;align-items:center;">
+      <div class="date-presets-wrapper">
+        <label class="filter-label">📅 Range:</label>
+        <div class="date-presets-pills" id="page-date-presets">
+          <button type="button" class="date-preset-pill" data-days="7">7D</button>
+          <button type="button" class="date-preset-pill active" data-days="30">30D</button>
+          <button type="button" class="date-preset-pill" data-days="60">60D</button>
+          <button type="button" class="date-preset-pill" data-days="90">90D</button>
+          <button type="button" class="date-preset-pill" data-days="all">All Time</button>
+        </div>
+      </div>
+
+      <!-- Date-to-Date Inputs -->
+      <div class="date-inputs-wrapper">
+        <div class="date-input-field">
+          <span class="date-field-label">From:</span>
+          <input type="date" id="page-start-date" class="date-picker-input" title="Filter from start date" />
+        </div>
+        <div class="date-input-field">
+          <span class="date-field-label">To:</span>
+          <input type="date" id="page-end-date" class="date-picker-input" title="Filter to end date" />
+        </div>
+        <button type="button" id="btn-apply-dates" class="btn-apply-dates" title="Apply custom date range">
+          <span>📅</span> Apply
+        </button>
+      </div>
+
+      <button id="btn-page-refresh" class="btn-refresh" title="Refresh all data">
+        <span>🔄</span> Refresh
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 8 KPI Metrics Cards Grid (Views, Clicks, CTR, Actions, Users, Clicking Users, Domains, Peaks) -->
+<div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 1.75rem;">
+  <!-- Total Pageviews -->
+  <div class="kpi-card" style="--accent-color: #6366f1;">
+    <div class="kpi-header">
+      <span class="kpi-title">Total Pageviews</span>
+      <div class="kpi-icon" style="color:#818cf8;">👁️</div>
+    </div>
+    <div class="kpi-value" id="kpi-page-views">--</div>
+    <div class="kpi-subtitle">Total hits logged on this URL</div>
+  </div>
+
+  <!-- Total Clicks -->
+  <div class="kpi-card" style="--accent-color: #ec4899;">
+    <div class="kpi-header">
+      <span class="kpi-title">Total Clicks</span>
+      <div class="kpi-icon" style="color:#f472b6;">🖱️</div>
+    </div>
+    <div class="kpi-value" id="kpi-page-clicks" style="color:#f472b6;">--</div>
+    <div class="kpi-subtitle">Buttons, CTAs & links clicked</div>
+  </div>
+
+  <!-- Click-Through Rate (CTR) -->
+  <div class="kpi-card" style="--accent-color: #8b5cf6;">
+    <div class="kpi-header">
+      <span class="kpi-title">Click-Through Rate</span>
+      <div class="kpi-icon" style="color:#c084fc;">🎯</div>
+    </div>
+    <div class="kpi-value" id="kpi-page-ctr" style="color:#c084fc;">--%</div>
+    <div class="kpi-subtitle">Total clicks ÷ Total pageviews</div>
+  </div>
+
+  <!-- Total Actions -->
+  <div class="kpi-card" style="--accent-color: #06b6d4;">
+    <div class="kpi-header">
+      <span class="kpi-title">Total Actions</span>
+      <div class="kpi-icon" style="color:#22d3ee;">⚡</div>
+    </div>
+    <div class="kpi-value" id="kpi-page-actions" style="color:#38bdf8;">--</div>
+    <div class="kpi-subtitle">Non-passive user interactions</div>
+  </div>
+
+  <!-- Unique Visitors -->
+  <div class="kpi-card" style="--accent-color: #3b82f6;">
+    <div class="kpi-header">
+      <span class="kpi-title">Unique Visitors</span>
+      <div class="kpi-icon" style="color:#60a5fa;">👥</div>
+    </div>
+    <div class="kpi-value" id="kpi-page-users">--</div>
+    <div class="kpi-subtitle">Distinct anonymous & identified users</div>
+  </div>
+
+  <!-- Clicking Visitors -->
+  <div class="kpi-card" style="--accent-color: #10b981;">
+    <div class="kpi-header">
+      <span class="kpi-title">Clicking Users</span>
+      <div class="kpi-icon" style="color:#34d399;">👆</div>
+    </div>
+    <div class="kpi-value" id="kpi-page-clicking-users" style="color:#34d399;">--</div>
+    <div class="kpi-subtitle">Distinct users who performed clicks</div>
+  </div>
+
+  <!-- Active Domains -->
+  <div class="kpi-card" style="--accent-color: #f59e0b;">
+    <div class="kpi-header">
+      <span class="kpi-title">Active Domains</span>
+      <div class="kpi-icon" style="color:#fbbf24;">🌐</div>
+    </div>
+    <div class="kpi-value" id="kpi-page-domains" style="color:#fbbf24;">--</div>
+    <div class="kpi-subtitle">Domains generating traffic & clicks</div>
+  </div>
+
+  <!-- Peak Hour Slot -->
+  <div class="kpi-card" style="--accent-color: #eab308;">
+    <div class="kpi-header">
+      <span class="kpi-title">Peak Traffic Slot</span>
+      <div class="kpi-icon" style="color:#fde047;">⏰</div>
+    </div>
+    <div class="kpi-value" id="kpi-page-peakhour" style="font-size:1.25rem;color:#fde047;">--</div>
+    <div class="kpi-subtitle" id="kpi-page-lastseen">Activity: --</div>
+  </div>
+</div>
+
+<!-- Dedicated Domain Breakdown on Clicks & Buttons Section -->
+<div class="card-visual" style="margin-bottom: 1.75rem;">
+  <div class="card-header" style="justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <div>
+      <h3 class="card-title">🌐 Domain Breakdown on Clicks & Buttons</h3>
+      <p class="card-description">Total clicks, clicking users, and top CTAs/buttons attributed across all active domains on this page.</p>
+    </div>
+    <span class="brand-badge" id="badge-total-domain-clicks" style="background:rgba(236,72,153,0.18);color:#f472b6;border-color:rgba(236,72,153,0.3);">
+      0 Total Clicks
+    </span>
+  </div>
+
+  <div class="domain-breakdown-grid">
+    <!-- Doughnut Chart Column -->
+    <div class="domain-chart-col">
+      <div style="height:230px;position:relative;">
+        <canvas id="chart-domain-clicks"></canvas>
+      </div>
+      <div id="domain-chart-legend" class="domain-chart-legend"></div>
+    </div>
+
+    <!-- Domain Data Table Column -->
+    <div class="domain-table-col" style="overflow-x:auto;max-height:290px;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Domain / Source</th>
+            <th>Total Clicks</th>
+            <th>Clicking Users</th>
+            <th>Share %</th>
+            <th>Top Buttons / CTAs Clicked</th>
+          </tr>
+        </thead>
+        <tbody id="table-domain-clicks">
+          <tr><td colspan="5" style="text-align:center;color:#64748b;padding:24px;">Loading domain clicks...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Recursive Actions, Buttons & Things Inspector Section -->
+<div class="card-visual" style="margin-bottom: 1.75rem;">
+  <div class="card-header" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <h3 class="card-title">🌳 Recursive Actions, Buttons & Things Inspector</h3>
+        <span class="brand-badge" id="badge-total-actions-count" style="background:rgba(6,182,212,0.15);color:#22d3ee;border-color:rgba(6,182,212,0.3);">
+          0 Action Clusters
+        </span>
+      </div>
+      <p class="card-description">Recursive multi-level drill-down: <strong>Event Type ➔ Button / CTA ➔ Domain ➔ Things Contained & Payloads</strong>.</p>
+    </div>
+
+    <!-- Inspector Toolbar: Search + View Switcher + Tree Controls -->
+    <div class="inspector-toolbar">
+      <!-- Search inside Inspector -->
+      <div class="inspector-search-wrap">
+        <input 
+          type="text" 
+          id="inspector-search-input" 
+          class="inspector-search-input" 
+          placeholder="Filter actions, buttons, domains, things..."
+          autocomplete="off"
+        />
+        <button id="btn-inspector-search-clear" class="btn-combobox-action" title="Clear filter" style="display:none;">✕</button>
+      </div>
+
+      <!-- View Switcher -->
+      <div class="granularity-btn-group" id="inspector-view-switcher">
+        <button class="btn-granularity active" id="btn-view-tree" title="Hierarchical Recursive View">
+          <span>🌳</span> Tree View
+        </button>
+        <button class="btn-granularity" id="btn-view-table" title="High-density Data Table">
+          <span>📋</span> Flat Table
+        </button>
+      </div>
+
+      <!-- Expand / Collapse Tree Controls -->
+      <div class="tree-controls-group" id="tree-toggle-actions">
+        <button type="button" class="btn-tree-toggle" id="btn-tree-expand-all" title="Expand all branches">
+          <span>⊞</span> Expand All
+        </button>
+        <button type="button" class="btn-tree-toggle" id="btn-tree-collapse-all" title="Collapse all branches">
+          <span>⊟</span> Collapse All
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recursive Tree View Container -->
+  <div id="container-actions-tree" class="actions-tree-container">
+    <div style="text-align:center;color:#64748b;padding:36px;">Loading action events...</div>
+  </div>
+
+  <!-- Flat Table View Container (toggled) -->
+  <div id="container-actions-table" class="actions-table-container" style="display:none;overflow-x:auto;max-height:460px;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Event Type</th>
+          <th>Button / CTA Name</th>
+          <th>Domain</th>
+          <th>Count</th>
+          <th>Users</th>
+          <th>Things Contained (Payload Summary)</th>
+          <th>Latest Activity</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody id="table-flat-actions">
+        <tr><td colspan="8" style="text-align:center;color:#64748b;padding:24px;">Loading flat actions...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Traffic Dynamics & Curves Visual Card -->
+<div class="card-visual" style="margin-bottom: 1.75rem;">
+  <div class="card-header" style="flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h3 class="card-title">📈 Page Traffic Curves & Volume Dynamics</h3>
+      <p class="card-description">Switch between granular views to pinpoint daily trends, 24h hourly peaks, 15-minute spikes, and day-of-week patterns.</p>
+    </div>
+
+    <!-- Curves Toggle Group -->
+    <div class="granularity-btn-group" id="page-curves-btn-group">
+      <button class="btn-granularity active" data-curve="daily">
+        <span>📅</span> Daily Trend
+      </button>
+      <button class="btn-granularity" data-curve="hourly">
+        <span>⏱️</span> 24h Hourly Curve
+      </button>
+      <button class="btn-granularity" data-curve="15min">
+        <span>⚡</span> 15-Minute Slots
+      </button>
+      <button class="btn-granularity" data-curve="dow">
+        <span>📆</span> Day of Week
+      </button>
+    </div>
+  </div>
+
+  <div class="chart-wrapper" style="min-height:340px;">
+    <canvas id="chart-page-curves"></canvas>
+  </div>
+</div>
+
+<!-- Two-Column Grid: User Actions & Conversions + Sources & UTMs -->
+<div class="charts-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 1.75rem;">
+  <!-- User Actions & Event Funnel -->
+  <div class="card-visual">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">⚡ User Actions & Event Funnel</h3>
+        <p class="card-description">Interactions, clicks, and conversion events triggered on this page.</p>
+      </div>
+    </div>
+    <div style="display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center;">
+      <div style="width:180px;height:180px;margin:0 auto;position:relative;">
+        <canvas id="chart-page-actions"></canvas>
+      </div>
+      <div style="flex:1;min-width:240px;overflow-x:auto;max-height:260px;">
+        <table class="data-table">
+          <thead>
+            <tr><th>Event Name</th><th>Hits</th><th>Users</th></tr>
+          </thead>
+          <tbody id="table-page-events">
+            <tr><td colspan="3" style="text-align:center;color:#64748b;">Loading events...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inbound Traffic Sources & UTM Campaigns -->
+  <div class="card-visual">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">🎯 Inbound Referrers & UTM Campaigns</h3>
+        <p class="card-description">How visitors discovered and landed on this specific URL.</p>
+      </div>
+    </div>
+
+    <!-- Sub-tabs for Referrers vs UTM -->
+    <div class="modal-tabs-bar" style="margin-bottom:0.85rem;">
+      <button class="modal-tab-btn active" id="btn-tab-referrers">
+        <span>🌐</span> Referrer Domains
+      </button>
+      <button class="modal-tab-btn" id="btn-tab-utm">
+        <span>📢</span> UTM Campaigns & Mediums
+      </button>
+    </div>
+
+    <div id="container-page-referrers" style="overflow-x:auto;max-height:240px;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Referrer Source</th><th>Hits</th><th>Visitors</th></tr>
+        </thead>
+        <tbody id="table-page-referrers">
+          <tr><td colspan="3" style="text-align:center;color:#64748b;">Loading referrers...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="container-page-utm" style="overflow-x:auto;max-height:240px;display:none;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Campaign</th><th>Source</th><th>Count</th></tr>
+        </thead>
+        <tbody id="table-page-utm">
+          <tr><td colspan="3" style="text-align:center;color:#64748b;">Loading campaigns...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Audience & Technology 3-Card Grid -->
+<div class="charts-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 1.75rem;">
+  <!-- Device Breakdown -->
+  <div class="card-visual">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">📱 Device Categories</h3>
+        <p class="card-description">Mobile vs Desktop distribution</p>
+      </div>
+    </div>
+    <div style="height:210px;display:flex;align-items:center;justify-content:center;">
+      <canvas id="chart-page-devices"></canvas>
+    </div>
+  </div>
+
+  <!-- Browsers -->
+  <div class="card-visual">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">🌐 Top Browsers</h3>
+        <p class="card-description">Browsing client software</p>
+      </div>
+    </div>
+    <div style="overflow-x:auto;max-height:220px;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Browser</th><th>Hits</th></tr>
+        </thead>
+        <tbody id="table-page-browsers">
+          <tr><td colspan="2" style="text-align:center;color:#64748b;">Loading browsers...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Countries -->
+  <div class="card-visual">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">🌍 Geographic Countries</h3>
+        <p class="card-description">Visitor country origins</p>
+      </div>
+    </div>
+    <div style="overflow-x:auto;max-height:220px;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Country</th><th>Visits</th></tr>
+        </thead>
+        <tbody id="table-page-countries">
+          <tr><td colspan="2" style="text-align:center;color:#64748b;">Loading countries...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Live Activity Stream Feed -->
+<div class="card-visual" style="margin-bottom: 2rem;">
+  <div class="card-header" style="justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <div>
+      <h3 class="card-title">⚡ Live Activity Stream</h3>
+      <p class="card-description">Real-time log of the latest 50 tracking events recorded on this page.</p>
+    </div>
+    <span class="brand-badge" style="background:rgba(99,102,241,0.2);color:#818cf8;">Real-Time Feed</span>
+  </div>
+
+  <div style="overflow-x:auto;max-height:380px;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Timestamp (IST)</th>
+          <th>Event</th>
+          <th>Session ID</th>
+          <th>Device</th>
+          <th>Referrer</th>
+          <th>Metadata Snippet</th>
+        </tr>
+      </thead>
+      <tbody id="table-page-activity">
+        <tr><td colspan="6" style="text-align:center;color:#64748b;padding:24px;">Loading stream...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Raw JSON Payload Viewer Modal -->
+<div id="modal-payload-viewer" class="modal-backdrop" style="display:none;">
+  <div class="modal-card payload-modal-card">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:1.3rem;">📦</span>
+        <div>
+          <h3 class="modal-title" id="payload-modal-title">Event Payload Details</h3>
+          <p class="modal-subtitle" id="payload-modal-subtitle">Raw properties and metadata captured for this event</p>
+        </div>
+      </div>
+      <button type="button" id="btn-close-payload-modal" class="btn-modal-close" title="Close modal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="payload-actions-strip">
+        <button type="button" id="btn-copy-payload-json" class="btn-copy-action">
+          <span>📋</span> Copy JSON
+        </button>
+        <span class="payload-meta-info" id="payload-meta-info"></span>
+      </div>
+      <pre class="json-code-block"><code id="payload-json-code">{}</code></pre>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/page_analytics.js"></script>
+{% endblock %}

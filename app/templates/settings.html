@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}Database & Tables | TrackingBot Analytics{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+  <div style="margin-bottom: 1.5rem; display: flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+    <div>
+      <h2 style="font-family:var(--font-heading);font-size:1.5rem;font-weight:700;color:#fff;">
+        ⚙️ Dual-Database Architecture & Configuration
+      </h2>
+      <p style="color:var(--text-muted);font-size:0.9rem;margin-top:4px;">
+        TrackingBot connects seamlessly to both Acolyte Living (PostgreSQL) and StartupFlora (MySQL).
+      </p>
+    </div>
+
+    <!-- Platform Toggle in Settings -->
+    <div class="website-btn-group" id="settings-platform-group">
+      <button class="website-choice-btn active" data-platform="living" id="settings-btn-living">
+        <span class="site-icon">🏢</span>
+        <div class="site-info-text">
+          <span class="site-name">Acolyte Living</span>
+          <span class="site-tag">PostgreSQL</span>
+        </div>
+      </button>
+      <button class="website-choice-btn" data-platform="startupflora" id="settings-btn-startupflora">
+        <span class="site-icon">🌸</span>
+        <div class="site-info-text">
+          <span class="site-name">StartupFlora</span>
+          <span class="site-tag">MySQL</span>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <div class="charts-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 1.75rem;">
+    <!-- DB 1: Acolyte Living Connection Info -->
+    <div class="card-visual" id="card-db-living">
+      <div class="card-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:1.3rem;">🏢</span>
+          <h3 class="card-title">Acolyte Living Database</h3>
+        </div>
+        <span class="badge-peak" id="status-living-badge">Connected</span>
+      </div>
+      <div style="font-size:0.88rem;color:var(--text-muted);display:flex;flex-direction:column;gap:8px;">
+        <div><strong>Engine:</strong> <span style="color:#10b981;">PostgreSQL 18</span></div>
+        <div><strong>Database Name:</strong> <code style="color:#38bdf8;">{{ config.DB_NAME }}</code></div>
+        <div><strong>Host / Port:</strong> <code>{{ config.DB_HOST }}:{{ config.DB_PORT }}</code></div>
+        <div><strong>Total Events:</strong> <span id="living-events-count" style="color:#fff;font-weight:600;">Loading...</span></div>
+        <div><strong>Last Event Date:</strong> <span id="living-last-date" style="color:#cbd5e1;">Loading...</span></div>
+      </div>
+    </div>
+
+    <!-- DB 2: StartupFlora Connection Info -->
+    <div class="card-visual" id="card-db-startupflora">
+      <div class="card-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:1.3rem;">🌸</span>
+          <h3 class="card-title">StartupFlora Database</h3>
+        </div>
+        <span class="badge-peak" id="status-flora-badge" style="background:rgba(236,72,153,0.15);color:#f472b6;border-color:rgba(236,72,153,0.3);">Connected</span>
+      </div>
+      <div style="font-size:0.88rem;color:var(--text-muted);display:flex;flex-direction:column;gap:8px;">
+        <div><strong>Engine:</strong> <span style="color:#f472b6;">MySQL 8.0</span></div>
+        <div><strong>Database Name:</strong> <code style="color:#38bdf8;">{{ config.MYSQL_DATABASE }}</code></div>
+        <div><strong>Host / Port:</strong> <code>{{ config.MYSQL_HOST }}:{{ config.MYSQL_PORT }}</code></div>
+        <div><strong>Total Events:</strong> <span id="flora-events-count" style="color:#fff;font-weight:600;">Loading...</span></div>
+        <div><strong>Last Event Date:</strong> <span id="flora-last-date" style="color:#cbd5e1;">Loading...</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Available Database Tables for Selected Platform -->
+  <div class="card-visual">
+    <div class="card-header" style="flex-wrap:wrap;gap:10px;">
+      <div>
+        <h3 class="card-title" id="tables-card-title">📋 Public Database Tables</h3>
+        <p class="card-description" id="tables-card-desc">Showing tables for selected platform. Click "View Schema" to inspect columns.</p>
+      </div>
+      <span class="brand-badge" id="active-platform-table-badge">Acolyte Living (PostgreSQL)</span>
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Table Name</th>
+            <th>Approximate Rows</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tables-body">
+          <tr><td colspan="4" style="text-align:center;color:#94a3b8;">Loading tables...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Schema Inspection Modal -->
+<div id="schema-modal" class="modal-backdrop" style="display:none;">
+  <div class="modal-dialog" style="max-width:650px;">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:1.3rem;">📋</span>
+        <h3 class="card-title" id="schema-modal-title">Table Schema</h3>
+      </div>
+      <button onclick="document.getElementById('schema-modal').style.display='none'" class="modal-close-btn">✕</button>
+    </div>
+    <div class="modal-body" style="max-height:450px;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Data Type</th>
+            <th>Nullable</th>
+          </tr>
+        </thead>
+        <tbody id="schema-modal-body">
+          <tr><td colspan="3" style="text-align:center;color:#64748b;">Loading columns...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentSettingsPlatform = localStorage.getItem('trackingbot_platform') || 'living';
+
+document.addEventListener('DOMContentLoaded', async () => {
+  initSettingsPlatform();
+  loadPlatformsStatus();
+  loadTables(currentSettingsPlatform);
+});
+
+function initSettingsPlatform() {
+  updateSettingsButtons(currentSettingsPlatform);
+
+  document.getElementById('settings-btn-living').addEventListener('click', () => {
+    switchSettingsPlatform('living');
+  });
+  document.getElementById('settings-btn-startupflora').addEventListener('click', () => {
+    switchSettingsPlatform('startupflora');
+  });
+
+  const globalSelect = document.getElementById('global-platform-select');
+  if (globalSelect) {
+    globalSelect.value = currentSettingsPlatform;
+    globalSelect.addEventListener('change', (e) => switchSettingsPlatform(e.target.value));
+  }
+
+  const navLiving = document.getElementById('btn-platform-living');
+  const navFlora = document.getElementById('btn-platform-startupflora');
+  if (navLiving) navLiving.addEventListener('click', () => switchSettingsPlatform('living'));
+  if (navFlora) navFlora.addEventListener('click', () => switchSettingsPlatform('startupflora'));
+}
+
+function switchSettingsPlatform(p) {
+  currentSettingsPlatform = p;
+  localStorage.setItem('trackingbot_platform', p);
+  updateSettingsButtons(p);
+  loadTables(p);
+}
+
+function updateSettingsButtons(p) {
+  const isLiving = p === 'living';
+  document.getElementById('settings-btn-living').classList.toggle('active', isLiving);
+  document.getElementById('settings-btn-startupflora').classList.toggle('active', !isLiving);
+
+  const globalSelect = document.getElementById('global-platform-select');
+  if (globalSelect && globalSelect.value !== p) {
+    globalSelect.value = p;
+  }
+
+  const navLiving = document.getElementById('btn-platform-living');
+  const navFlora = document.getElementById('btn-platform-startupflora');
+  if (navLiving) navLiving.classList.toggle('active', isLiving);
+  if (navFlora) navFlora.classList.toggle('active', !isLiving);
+
+  const badge = document.getElementById('active-platform-table-badge');
+  if (badge) {
+    badge.textContent = isLiving ? 'Acolyte Living (PostgreSQL)' : 'StartupFlora (MySQL)';
+  }
+}
+
+async function loadPlatformsStatus() {
+  try {
+    const res = await fetch('/api/analytics/platforms');
+    const data = await res.json();
+    const platforms = data.platforms || [];
+
+    const pLiving = platforms.find(p => p.id === 'living');
+    if (pLiving) {
+      document.getElementById('living-events-count').textContent = formatNumber(pLiving.stats.events);
+      document.getElementById('living-last-date').textContent = pLiving.stats.last_date ? new Date(pLiving.stats.last_date).toLocaleString() : 'N/A';
+    }
+
+    const pFlora = platforms.find(p => p.id === 'startupflora');
+    if (pFlora) {
+      document.getElementById('flora-events-count').textContent = formatNumber(pFlora.stats.events);
+      document.getElementById('flora-last-date').textContent = pFlora.stats.last_date ? new Date(pFlora.stats.last_date).toLocaleString() : 'N/A';
+    }
+  } catch (err) {
+    console.error('Failed to load platforms status:', err);
+  }
+}
+
+async function loadTables(platform) {
+  try {
+    const tbody = document.getElementById('tables-body');
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:20px;">Loading tables...</td></tr>';
+
+    const res = await fetch(`/api/analytics/tables?platform=${platform}`);
+    const data = await res.json();
+    tbody.innerHTML = '';
+
+    if (data.tables && data.tables.length) {
+      data.tables.forEach(t => {
+        const tr = document.createElement('tr');
+        const isTracking = t.table_name.startsWith('tracking_');
+        tr.innerHTML = `
+          <td style="font-family:monospace;font-weight:600;color:${isTracking ? '#38bdf8' : '#cbd5e1'};">
+            ${isTracking ? '⚡ ' : ''}${t.table_name}
+          </td>
+          <td>${formatNumber(t.approximate_rows)}</td>
+          <td>
+            ${isTracking 
+              ? '<span class="badge-peak">Active Tracking</span>' 
+              : '<span style="color:#64748b;font-size:0.8rem;">Available</span>'}
+          </td>
+          <td>
+            <button onclick="inspectSchema('${t.table_name}', '${platform}')" class="btn-deep-dive" style="padding:4px 10px;font-size:0.75rem;">
+              View Schema
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } else {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#64748b;">No tables found</td></tr>';
+    }
+  } catch (err) {
+    console.error('Failed to load tables:', err);
+  }
+}
+
+async function inspectSchema(tableName, platform) {
+  const modal = document.getElementById('schema-modal');
+  const modalTitle = document.getElementById('schema-modal-title');
+  const tbody = document.getElementById('schema-modal-body');
+
+  modalTitle.textContent = `Table Schema: ${tableName} (${platform === 'startupflora' ? 'MySQL' : 'PostgreSQL'})`;
+  tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#64748b;">Loading columns...</td></tr>';
+  modal.style.display = 'flex';
+
+  try {
+    const res = await fetch(`/api/analytics/table/${tableName}/schema?platform=${platform}`);
+    const data = await res.json();
+    tbody.innerHTML = '';
+
+    if (data.columns && data.columns.length) {
+      data.columns.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-family:monospace;color:#38bdf8;font-weight:600;">${c.column_name}</td>
+          <td style="color:#cbd5e1;">${c.data_type}</td>
+          <td style="color:#94a3b8;">${c.is_nullable}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } else {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#64748b;">No columns found</td></tr>';
+    }
+  } catch (err) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#ef4444;">Failed to load schema</td></tr>';
+  }
+}
+
+function formatNumber(num) {
+  if (num === null || num === undefined) return '0';
+  return Number(num).toLocaleString('en-US');
+}
+</script>
+{% endblock %}

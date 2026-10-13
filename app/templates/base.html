@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}TrackingBot Analytics & BI Platform{% endblock %}</title>
+  
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+  <!-- Application Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <a href="/reports" class="brand">
+      <div class="brand-icon">⚡</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="brand-title">TrackingBot</span>
+          <span class="brand-badge">BI & AI Analytics</span>
+        </div>
+      </div>
+    </a>
+
+    <nav class="nav-links">
+      <a href="/reports" class="nav-link {% if active_page == 'reports' %}active{% endif %}">
+        <span>📊</span> Reports & Visuals
+      </a>
+      <a href="/page-analytics" class="nav-link {% if active_page == 'page-analytics' %}active{% endif %}">
+        <span>📄</span> Page Analytics
+      </a>
+      <a href="/chat" class="nav-link {% if active_page == 'chat' %}active{% endif %}">
+        <span>💬</span> AI Analyst Chatbot
+      </a>
+      <a href="/settings" class="nav-link {% if active_page == 'settings' %}active{% endif %}">
+        <span>⚙️</span> Database & Tables
+      </a>
+    </nav>
+
+    <div class="nav-actions">
+      <!-- Global Platform Dropdown Selector -->
+      <div class="nav-platform-wrapper">
+        <select id="global-platform-select" class="select-control nav-platform-select" title="Switch Website Platform">
+          <option value="living">🏢 Acolyte Living</option>
+          <option value="startupflora">🌸 StartupFlora</option>
+        </select>
+      </div>
+
+      <div class="status-pill" id="global-db-status" title="Active Database Connection">
+        <span class="status-dot"></span>
+        <span id="db-status-label">Acolyte Living (PG)</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="/static/js/common.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

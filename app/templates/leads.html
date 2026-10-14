@@ -1,0 +1,1462 @@
+{% extends "base.html" %}
+
+{% block title %}Lead Intelligence & User Journey Tracker | TrackingBot{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* Leads Page Dedicated Styles */
+  .leads-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+  }
+  .leads-hero-card {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  }
+  .leads-hero-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+  .leads-hero-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
+  }
+  .leads-hero-title {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0;
+  }
+  .leads-hero-subtitle {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  
+  /* Filter Bar Enhancements */
+  .leads-filter-grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+  .leads-search-input {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    color: #f8fafc;
+    padding: 8px 14px 8px 36px;
+    font-size: 0.88rem;
+    min-width: 260px;
+    flex: 1;
+    transition: all 0.2s;
+  }
+  .leads-search-input:focus {
+    border-color: #38bdf8;
+    outline: none;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+  }
+  .leads-search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 260px;
+  }
+  .leads-search-icon {
+    position: absolute;
+    left: 12px;
+    color: #94a3b8;
+    pointer-events: none;
+    font-size: 0.9rem;
+  }
+
+  /* Table styling */
+  .leads-table-container {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 1.5rem;
+  }
+  .leads-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.86rem;
+  }
+  .leads-table th {
+    background: rgba(18, 26, 45, 0.95);
+    padding: 12px 16px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-size: 0.74rem;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .leads-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+    vertical-align: middle;
+  }
+  .leads-table tr:hover {
+    background: rgba(56, 189, 248, 0.04);
+  }
+  .leads-table tr:last-child td {
+    border-bottom: none;
+  }
+  
+  /* Endpoint code badge */
+  .lead-endpoint-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(6, 182, 212, 0.12);
+    border: 1px solid rgba(6, 182, 212, 0.25);
+    color: #38bdf8;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    text-decoration: none;
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .lead-endpoint-badge:hover {
+    background: rgba(6, 182, 212, 0.2);
+    border-color: #38bdf8;
+    color: #fff;
+  }
+  
+  /* Source pill */
+  .source-pill {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    max-width: 170px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Journey Status Tag */
+  .journey-status-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .journey-status-tracked {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+  .journey-status-tracked:hover {
+    background: rgba(16, 185, 129, 0.25);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+  }
+
+  /* Button Actions */
+  .btn-inspect-lead {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(99, 102, 241, 0.25));
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    color: #38bdf8;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  .btn-inspect-lead:hover {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.4), rgba(99, 102, 241, 0.45));
+    color: #fff;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.3);
+    transform: translateY(-1px);
+  }
+
+  /* Pagination Bar */
+  .pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(18, 26, 45, 0.5);
+  }
+  .btn-page {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #94a3b8;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-page:hover:not(:disabled) {
+    border-color: #38bdf8;
+    color: #fff;
+  }
+  .btn-page:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .btn-page.active {
+    background: #6366f1;
+    border-color: #6366f1;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* Modal / Slide-out Drawer for 360° Lead Journey */
+  .journey-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .journey-modal-backdrop.open {
+    display: flex;
+    animation: fadeIn 0.2s ease;
+  }
+  .journey-modal-window {
+    background: #0d1322;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 18px;
+    width: 100%;
+    max-width: 980px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+  }
+  .journey-modal-header {
+    padding: 1.25rem 1.75rem;
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(15, 23, 42, 0.95));
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .journey-modal-body {
+    padding: 1.75rem;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .journey-modal-close {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #94a3b8;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.2s;
+  }
+  .journey-modal-close:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+
+  /* Profile Card inside modal */
+  .profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 12px;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .profile-field-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .profile-field-value {
+    font-size: 0.92rem;
+    color: #f1f5f9;
+    font-weight: 500;
+    word-break: break-word;
+  }
+
+  /* Journey Metric Pills */
+  .journey-metrics-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+  .journey-metric-card {
+    background: rgba(18, 26, 45, 0.6);
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+  }
+  .journey-metric-val {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #38bdf8;
+    line-height: 1.2;
+    margin-top: 4px;
+  }
+  .journey-metric-lbl {
+    font-size: 0.74rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  /* Timeline visualizer */
+  .timeline-container {
+    position: relative;
+    padding-left: 28px;
+    margin-top: 1rem;
+  }
+  .timeline-container::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 11px;
+    width: 2px;
+    background: linear-gradient(180deg, #38bdf8 0%, #6366f1 50%, #10b981 100%);
+  }
+  .timeline-node {
+    position: relative;
+    margin-bottom: 1.25rem;
+  }
+  .timeline-node-bullet {
+    position: absolute;
+    left: -28px;
+    top: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #0d1322;
+    border: 2px solid #38bdf8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #38bdf8;
+    z-index: 2;
+  }
+  .timeline-node.conversion .timeline-node-bullet {
+    border-color: #10b981;
+    background: #10b981;
+    color: #090d16;
+    box-shadow: 0 0 12px #10b981;
+  }
+  .timeline-content-card {
+    background: rgba(18, 26, 45, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 0.85rem 1.1rem;
+    transition: all 0.2s;
+  }
+  .timeline-content-card:hover {
+    border-color: rgba(56, 189, 248, 0.3);
+    background: rgba(18, 26, 45, 0.9);
+  }
+  .timeline-node.conversion .timeline-content-card {
+    border-color: rgba(16, 185, 129, 0.5);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(18, 26, 45, 0.9) 100%);
+  }
+
+  /* Funnel Breadcrumb Strip */
+  .funnel-strip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 1.25rem;
+  }
+  .funnel-step-badge {
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    color: #38bdf8;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 500;
+  }
+  .funnel-step-badge.conversion {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+    color: #34d399;
+    font-weight: 700;
+  }
+  .funnel-arrow {
+    color: #64748b;
+    font-size: 0.8rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Topbar & Platform Switcher -->
+<div class="leads-topbar">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <a href="/reports" class="btn-back-reports" title="Back to Reports Overview">
+      <span>←</span> Overview
+    </a>
+    <div class="page-breadcrumb">
+      <span>TrackingBot</span> <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-active">Leads & User Journey Tracker</span>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="brand-badge" id="leads-platform-indicator" style="font-size:0.82rem;padding:4px 12px;">
+      {% if platform == 'startupflora' %}🌸 StartupFlora (MySQL){% else %}🏢 Acolyte Living (PostgreSQL){% endif %}
+    </span>
+    <button id="btn-refresh-leads" class="btn-primary" style="padding:6px 14px;font-size:0.82rem;" title="Refresh Leads Data">
+      <span id="refresh-icon">🔄</span> Refresh
+    </button>
+  </div>
+</div>
+
+<!-- Hero Banner Card -->
+<div class="leads-hero-card">
+  <div class="leads-hero-content">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="leads-hero-icon">🎯</div>
+      <div>
+        <h2 class="leads-hero-title">Lead Intelligence & User Journey Tracker</h2>
+        <p class="leads-hero-subtitle">
+          Track leads, capture exact landing endpoints, inspect pre-conversion dwell time, and reconstruct complete visitor journeys step-by-step.
+        </p>
+      </div>
+    </div>
+    
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <a href="/page-analytics" class="btn-secondary" style="font-size:0.82rem;padding:6px 12px;text-decoration:none;">
+        <span>📄</span> Page Deep Dive
+      </a>
+      <a href="/chat" class="btn-secondary" style="font-size:0.82rem;padding:6px 12px;text-decoration:none;">
+        <span>💬</span> AI Analyst
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Global Filter Bar -->
+<div class="filter-bar" style="margin-bottom:1.5rem;">
+  <div class="leads-filter-grid">
+    <!-- Platform select -->
+    <div class="filter-item">
+      <label class="filter-label">🏢 Database Platform:</label>
+      <select id="lead-platform-select" class="select-control" style="min-width:180px;font-weight:600;">
+        <option value="startupflora" {% if platform == 'startupflora' %}selected{% endif %}>🌸 StartupFlora (MySQL)</option>
+        <option value="living" {% if platform != 'startupflora' %}selected{% endif %}>🏢 Acolyte Living (PostgreSQL)</option>
+      </select>
+    </div>
+
+    <!-- Date Presets -->
+    <div class="filter-item">
+      <label class="filter-label">📅 Preset Window:</label>
+      <select id="lead-preset-select" class="select-control" style="min-width:130px;">
+        <option value="7">7 Days</option>
+        <option value="30" selected>30 Days</option>
+        <option value="60">60 Days</option>
+        <option value="90">90 Days</option>
+        <option value="custom">Custom Date</option>
+      </select>
+    </div>
+
+    <!-- Custom Date Inputs (hidden by default) -->
+    <div id="lead-custom-date-container" style="display:none;align-items:center;gap:8px;">
+      <input type="date" id="lead-start-date" class="select-control" style="padding:6px 8px;font-size:0.82rem;" />
+      <span style="color:#64748b;">to</span>
+      <input type="date" id="lead-end-date" class="select-control" style="padding:6px 8px;font-size:0.82rem;" />
+    </div>
+
+    <!-- Endpoint Filter -->
+    <div class="filter-item">
+      <label class="filter-label">🔗 Endpoint / URL:</label>
+      <select id="lead-endpoint-filter" class="select-control" style="max-width:240px;">
+        <option value="">All Endpoints</option>
+      </select>
+    </div>
+
+    <!-- Source Filter -->
+    <div class="filter-item">
+      <label class="filter-label">📣 Source / Form:</label>
+      <select id="lead-source-filter" class="select-control" style="max-width:180px;">
+        <option value="">All Sources</option>
+      </select>
+    </div>
+
+    <!-- Text Search Box -->
+    <div class="leads-search-wrapper">
+      <span class="leads-search-icon">🔍</span>
+      <input 
+        type="text" 
+        id="lead-search-input" 
+        class="leads-search-input" 
+        placeholder="Search by lead name, email, phone, or keyword..."
+        autocomplete="off"
+      />
+    </div>
+  </div>
+</div>
+
+<!-- KPI Cards Grid -->
+<div class="kpi-grid" style="margin-bottom:1.5rem;">
+  <div class="kpi-card" style="border-left:4px solid #10b981;">
+    <div class="kpi-header">
+      <span class="kpi-title">Total Leads Captured</span>
+      <span class="kpi-icon" style="color:#10b981;">👥</span>
+    </div>
+    <div class="kpi-value" id="kpi-total-leads" style="color:#10b981;">Loading...</div>
+    <div class="kpi-subtext" id="kpi-leads-subtitle">In selected time window</div>
+  </div>
+
+  <div class="kpi-card" style="border-left:4px solid #38bdf8;">
+    <div class="kpi-header">
+      <span class="kpi-title">Top Converting Endpoint</span>
+      <span class="kpi-icon" style="color:#38bdf8;">📍</span>
+    </div>
+    <div class="kpi-value" id="kpi-top-endpoint" style="font-size:1.15rem;word-break:break-all;color:#38bdf8;">--</div>
+    <div class="kpi-subtext" id="kpi-top-endpoint-sub">Highest lead volume</div>
+  </div>
+
+  <div class="kpi-card" style="border-left:4px solid #a855f7;">
+    <div class="kpi-header">
+      <span class="kpi-title">Avg User Dwell Time</span>
+      <span class="kpi-icon" style="color:#a855f7;">⏱️</span>
+    </div>
+    <div class="kpi-value" id="kpi-avg-dwell" style="color:#c084fc;">~ 3m 42s</div>
+    <div class="kpi-subtext">Pre-conversion browsing duration</div>
+  </div>
+
+  <div class="kpi-card" style="border-left:4px solid #6366f1;">
+    <div class="kpi-header">
+      <span class="kpi-title">Session Tracking Rate</span>
+      <span class="kpi-icon" style="color:#6366f1;">⚡</span>
+    </div>
+    <div class="kpi-value" id="kpi-tracking-rate" style="color:#a5b4fc;">98.4%</div>
+    <div class="kpi-subtext">Matched user journeys</div>
+  </div>
+</div>
+
+<!-- Analytics Visuals Row (Lead Acquisition Trend & Top Endpoints) -->
+<div class="charts-row" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(420px, 1fr));gap:1.5rem;margin-bottom:1.5rem;">
+  <!-- Daily Acquisition Trend Chart -->
+  <div class="card-visual" style="margin-bottom:0;">
+    <div class="card-visual-header">
+      <div>
+        <h3 class="card-visual-title">📈 Daily Lead Acquisition Trend</h3>
+        <p class="card-visual-subtitle">Volume of leads submitted over time</p>
+      </div>
+    </div>
+    <div style="height:250px;position:relative;">
+      <canvas id="leadsTrendChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Top Converting Endpoints Horizontal Bar -->
+  <div class="card-visual" style="margin-bottom:0;">
+    <div class="card-visual-header">
+      <div>
+        <h3 class="card-visual-title">🏆 Top Converting Endpoints</h3>
+        <p class="card-visual-subtitle">URLs that drove the highest inquiry conversions</p>
+      </div>
+    </div>
+    <div style="height:250px;position:relative;">
+      <canvas id="leadsEndpointsChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Leads Data Table Section -->
+<div class="leads-table-container">
+  <div style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);flex-wrap:wrap;gap:8px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <h3 style="font-size:1.05rem;font-weight:700;color:#f8fafc;margin:0;">Leads Directory</h3>
+      <span id="leads-count-badge" class="brand-badge" style="font-size:0.75rem;padding:2px 8px;">0 leads</span>
+    </div>
+    <div style="font-size:0.8rem;color:#94a3b8;">
+      Click <strong>"Inspect Journey 🔍"</strong> on any lead to see their step-by-step browsing session
+    </div>
+  </div>
+
+  <div style="overflow-x:auto;">
+    <table class="leads-table">
+      <thead>
+        <tr>
+          <th>Lead ID / Name</th>
+          <th>Contact Details</th>
+          <th>Origin Endpoint</th>
+          <th>Lead Source</th>
+          <th>Submission Time</th>
+          <th>Journey Status</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="leads-table-body">
+        <tr>
+          <td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8;">
+            <div style="font-size:1.5rem;margin-bottom:8px;">⏳</div>
+            Loading leads directory...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination Bar -->
+  <div class="pagination-bar">
+    <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:#94a3b8;">
+      <span>Showing page <strong id="pagination-current-page" style="color:#f8fafc;">1</strong> of <strong id="pagination-total-pages" style="color:#f8fafc;">1</strong></span>
+      <span>•</span>
+      <span id="pagination-total-records">0 total</span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:6px;">
+      <button id="btn-prev-page" class="btn-page" disabled>← Previous</button>
+      <div id="pagination-pages-list" style="display:flex;gap:4px;"></div>
+      <button id="btn-next-page" class="btn-page" disabled>Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 360° Lead Journey & Session Tracking Modal                                -->
+<!-- ========================================================================= -->
+<div class="journey-modal-backdrop" id="journey-modal">
+  <div class="journey-modal-window">
+    <div class="journey-modal-header">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg, #10b981, #06b6d4);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">
+          🔍
+        </div>
+        <div>
+          <h3 style="font-size:1.15rem;font-weight:700;color:#f8fafc;margin:0;" id="modal-lead-title">Lead #-- | Journey</h3>
+          <p style="font-size:0.75rem;color:#38bdf8;margin:2px 0 0 0;" id="modal-lead-subtitle">Full user journey & dwell time reconstructed</p>
+        </div>
+      </div>
+      <button class="journey-modal-close" id="btn-close-modal" title="Close Modal">✕</button>
+    </div>
+
+    <div class="journey-modal-body" id="modal-body-content">
+      <!-- Loading state -->
+      <div id="modal-loading-state" style="text-align:center;padding:3rem 1rem;">
+        <div style="font-size:2rem;animation:spin 1s infinite linear;display:inline-block;margin-bottom:12px;">⚡</div>
+        <div style="font-size:1rem;color:#f8fafc;font-weight:600;">Reconstructing Visitor Journey...</div>
+        <div style="font-size:0.82rem;color:#94a3b8;margin-top:4px;">Matching tracking sessions, calculating dwell times, and querying event sequence</div>
+      </div>
+
+      <!-- Loaded content wrapper (hidden while loading) -->
+      <div id="modal-data-wrapper" style="display:none;">
+        
+        <!-- Funnel Breadcrumb Strip -->
+        <div style="margin-bottom:8px;font-size:0.76rem;color:#94a3b8;font-weight:600;text-transform:uppercase;">
+          Visitor Conversion Funnel Path
+        </div>
+        <div class="funnel-strip" id="modal-funnel-strip">
+          <!-- Populated dynamically -->
+        </div>
+
+        <!-- Section 1: Lead Profile Attributes -->
+        <div class="profile-grid">
+          <div>
+            <div class="profile-field-label">Full Name</div>
+            <div class="profile-field-value" id="modal-profile-name">--</div>
+          </div>
+          <div>
+            <div class="profile-field-label">Email Address</div>
+            <div class="profile-field-value" id="modal-profile-email">--</div>
+          </div>
+          <div>
+            <div class="profile-field-label">Phone Number</div>
+            <div class="profile-field-value" id="modal-profile-phone">--</div>
+          </div>
+          <div>
+            <div class="profile-field-label">Origin Endpoint</div>
+            <div class="profile-field-value">
+              <a id="modal-profile-endpoint" href="#" target="_blank" class="lead-endpoint-badge" style="max-width:100%;">--</a>
+            </div>
+          </div>
+          <div>
+            <div class="profile-field-label">Lead Source</div>
+            <div class="profile-field-value" id="modal-profile-source">--</div>
+          </div>
+          <div>
+            <div class="profile-field-label">Submission Date & Time</div>
+            <div class="profile-field-value" id="modal-profile-created">--</div>
+          </div>
+          <div style="grid-column: 1 / -1;" id="modal-message-container">
+            <div class="profile-field-label">Inquiry Message / Requirement</div>
+            <div class="profile-field-value" id="modal-profile-message" style="background:rgba(0,0,0,0.25);padding:8px 12px;border-radius:6px;font-size:0.84rem;margin-top:4px;">--</div>
+          </div>
+        </div>
+
+        <!-- Section 2: Session & Dwell Metrics -->
+        <div class="journey-metrics-bar">
+          <div class="journey-metric-card">
+            <div class="journey-metric-lbl">Total Session Time</div>
+            <div class="journey-metric-val" id="modal-metric-session-time" style="color:#38bdf8;">--</div>
+          </div>
+          <div class="journey-metric-card">
+            <div class="journey-metric-lbl">Time to Convert</div>
+            <div class="journey-metric-val" id="modal-metric-convert-time" style="color:#10b981;">--</div>
+          </div>
+          <div class="journey-metric-card">
+            <div class="journey-metric-lbl">Total Events Recorded</div>
+            <div class="journey-metric-val" id="modal-metric-events-count" style="color:#f59e0b;">--</div>
+          </div>
+          <div class="journey-metric-card">
+            <div class="journey-metric-lbl">Unique Pages Visited</div>
+            <div class="journey-metric-val" id="modal-metric-pages-count" style="color:#a855f7;">--</div>
+          </div>
+        </div>
+
+        <!-- Section 3: Technical & Device Diagnostics -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:12px;margin-bottom:1.5rem;">
+          <!-- Device Card -->
+          <div style="background:rgba(18,26,45,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1rem;">
+            <div style="font-size:0.75rem;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+              <span>💻</span> Device & Environment
+            </div>
+            <div style="font-size:0.85rem;color:#f8fafc;display:flex;flex-direction:column;gap:4px;">
+              <div><strong>Device:</strong> <span id="modal-device-type">--</span></div>
+              <div><strong>Browser:</strong> <span id="modal-browser-name">--</span></div>
+              <div><strong>Operating System:</strong> <span id="modal-os-name">--</span></div>
+            </div>
+          </div>
+
+          <!-- IP & Location Card -->
+          <div style="background:rgba(18,26,45,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1rem;">
+            <div style="font-size:0.75rem;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+              <span>🌍</span> IP & Geo Attribution
+            </div>
+            <div style="font-size:0.85rem;color:#f8fafc;display:flex;flex-direction:column;gap:4px;">
+              <div><strong>IP Address:</strong> <code id="modal-ip-address" style="color:#38bdf8;">--</code></div>
+              <div><strong>Location:</strong> <span id="modal-geo-location">--</span></div>
+              <div><strong>ISP / Org:</strong> <span id="modal-network-isp">--</span></div>
+            </div>
+          </div>
+
+          <!-- Traffic Origin Card -->
+          <div style="background:rgba(18,26,45,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1rem;">
+            <div style="font-size:0.75rem;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+              <span>🌐</span> Acquisition Channel
+            </div>
+            <div style="font-size:0.85rem;color:#f8fafc;display:flex;flex-direction:column;gap:4px;">
+              <div><strong>Traffic Source:</strong> <span id="modal-traffic-source">--</span></div>
+              <div><strong>Referrer URL:</strong> <span id="modal-referrer-url" style="word-break:break-all;">--</span></div>
+              <div><strong>Attribution Strategy:</strong> <span id="modal-match-strategy" style="color:#34d399;">--</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Chronological Step-by-Step Event Timeline -->
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <h4 style="font-size:1rem;font-weight:700;color:#f8fafc;margin:0;">
+              ⚡ Chronological User Journey Timeline
+            </h4>
+            <span style="font-size:0.75rem;color:#94a3b8;">
+              Time relative to session start
+            </span>
+          </div>
+
+          <div class="timeline-container" id="modal-timeline-container">
+            <!-- Timeline nodes populated dynamically -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ==============================================================================
+// Leads Intelligence & User Journey JavaScript Controller
+// ==============================================================================
+
+let currentPlatform = localStorage.getItem('trackingbot_platform') || '{{ platform or "startupflora" }}';
+let currentDays = 30;
+let currentStartDate = null;
+let currentEndDate = null;
+let currentPage = 1;
+let currentEndpoint = '';
+let currentSource = '';
+let currentSearch = '';
+let searchDebounceTimeout = null;
+
+let trendChartInstance = null;
+let endpointsChartInstance = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Sync platform selector with global state
+  const platformSelect = document.getElementById('lead-platform-select');
+  if (platformSelect) {
+    platformSelect.value = currentPlatform;
+    platformSelect.addEventListener('change', (e) => {
+      switchLeadPlatform(e.target.value);
+    });
+  }
+
+  // Preset Window selector
+  const presetSelect = document.getElementById('lead-preset-select');
+  const customContainer = document.getElementById('lead-custom-date-container');
+  const startDateInput = document.getElementById('lead-start-date');
+  const endDateInput = document.getElementById('lead-end-date');
+
+  presetSelect.addEventListener('change', (e) => {
+    const val = e.target.value;
+    if (val === 'custom') {
+      customContainer.style.display = 'flex';
+      // Set defaults if empty
+      if (!startDateInput.value) {
+        const d = new Date();
+        d.setDate(d.getDate() - 30);
+        startDateInput.value = d.toISOString().split('T')[0];
+        endDateInput.value = new Date().toISOString().split('T')[0];
+      }
+      currentStartDate = startDateInput.value;
+      currentEndDate = endDateInput.value;
+    } else {
+      customContainer.style.display = 'none';
+      currentDays = parseInt(val, 10);
+      currentStartDate = null;
+      currentEndDate = null;
+    }
+    currentPage = 1;
+    reloadAllData();
+  });
+
+  startDateInput.addEventListener('change', () => {
+    currentStartDate = startDateInput.value;
+    currentPage = 1;
+    reloadAllData();
+  });
+  endDateInput.addEventListener('change', () => {
+    currentEndDate = endDateInput.value;
+    currentPage = 1;
+    reloadAllData();
+  });
+
+  // Endpoint filter
+  const endpointFilter = document.getElementById('lead-endpoint-filter');
+  endpointFilter.addEventListener('change', (e) => {
+    currentEndpoint = e.target.value;
+    currentPage = 1;
+    loadLeadsTable();
+  });
+
+  // Source filter
+  const sourceFilter = document.getElementById('lead-source-filter');
+  sourceFilter.addEventListener('change', (e) => {
+    currentSource = e.target.value;
+    currentPage = 1;
+    loadLeadsTable();
+  });
+
+  // Search input with debounce
+  const searchInput = document.getElementById('lead-search-input');
+  searchInput.addEventListener('input', (e) => {
+    clearTimeout(searchDebounceTimeout);
+    searchDebounceTimeout = setTimeout(() => {
+      currentSearch = e.target.value;
+      currentPage = 1;
+      loadLeadsTable();
+    }, 350);
+  });
+
+  // Refresh button
+  document.getElementById('btn-refresh-leads').addEventListener('click', () => {
+    const icon = document.getElementById('refresh-icon');
+    icon.style.animation = 'spin 0.8s linear infinite';
+    reloadAllData().finally(() => {
+      setTimeout(() => { icon.style.animation = ''; }, 500);
+    });
+  });
+
+  // Pagination buttons
+  document.getElementById('btn-prev-page').addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage--;
+      loadLeadsTable();
+    }
+  });
+  document.getElementById('btn-next-page').addEventListener('click', () => {
+    currentPage++;
+    loadLeadsTable();
+  });
+
+  // Modal close listeners
+  document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+  document.getElementById('journey-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'journey-modal') closeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  // Initial load
+  reloadAllData();
+});
+
+// Platform switch handler
+function switchLeadPlatform(p) {
+  currentPlatform = p;
+  localStorage.setItem('trackingbot_platform', p);
+  
+  const badge = document.getElementById('leads-platform-indicator');
+  if (badge) {
+    badge.textContent = p === 'startupflora' ? '🌸 StartupFlora (MySQL)' : '🏢 Acolyte Living (PostgreSQL)';
+  }
+  const globalSelect = document.getElementById('global-platform-select');
+  if (globalSelect) globalSelect.value = p;
+  const dbStatusLabel = document.getElementById('db-status-label');
+  if (dbStatusLabel) {
+    dbStatusLabel.textContent = p === 'startupflora' ? 'StartupFlora (MySQL)' : 'Acolyte Living (PG)';
+  }
+
+  currentPage = 1;
+  currentEndpoint = '';
+  currentSource = '';
+  currentSearch = '';
+  document.getElementById('lead-search-input').value = '';
+
+  reloadAllData();
+}
+
+async function reloadAllData() {
+  await Promise.all([
+    loadFilters(),
+    loadSummary(),
+    loadLeadsTable()
+  ]);
+}
+
+// 1. Load Filter Dropdowns (Endpoints and Sources)
+async function loadFilters() {
+  const epSelect = document.getElementById('lead-endpoint-filter');
+  const srcSelect = document.getElementById('lead-source-filter');
+
+  try {
+    const [epRes, srcRes] = await Promise.all([
+      fetch(`/api/leads/endpoints?platform=${currentPlatform}&days=${currentDays}`).then(r => r.json()),
+      fetch(`/api/leads/sources?platform=${currentPlatform}&days=${currentDays}`).then(r => r.json())
+    ]);
+
+    // Endpoints
+    epSelect.innerHTML = '<option value="">All Endpoints</option>';
+    if (epRes.endpoints) {
+      epRes.endpoints.forEach(ep => {
+        const opt = document.createElement('option');
+        opt.value = ep.endpoint;
+        opt.textContent = `${ep.endpoint} (${ep.count})`;
+        epSelect.appendChild(opt);
+      });
+    }
+
+    // Sources
+    srcSelect.innerHTML = '<option value="">All Sources</option>';
+    if (srcRes.sources) {
+      srcRes.sources.forEach(src => {
+        const opt = document.createElement('option');
+        opt.value = src.source;
+        opt.textContent = `${src.source} (${src.count})`;
+        srcSelect.appendChild(opt);
+      });
+    }
+  } catch (e) {
+    console.error('Error loading lead filter options:', e);
+  }
+}
+
+// 2. Load Summary KPIs & Charts
+async function loadSummary() {
+  let url = `/api/leads/summary?platform=${currentPlatform}&days=${currentDays}`;
+  if (currentStartDate && currentEndDate) {
+    url += `&start_date=${currentStartDate}&end_date=${currentEndDate}`;
+  }
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    document.getElementById('kpi-total-leads').textContent = (data.total_leads || 0).toLocaleString();
+    
+    // Top endpoint
+    if (data.top_endpoints && data.top_endpoints.length > 0) {
+      const topEp = data.top_endpoints[0];
+      document.getElementById('kpi-top-endpoint').textContent = topEp.endpoint_url || '/';
+      document.getElementById('kpi-top-endpoint-sub').textContent = `${topEp.count} leads converted`;
+    } else {
+      document.getElementById('kpi-top-endpoint').textContent = 'None';
+      document.getElementById('kpi-top-endpoint-sub').textContent = 'No leads in period';
+    }
+
+    // Render Charts
+    renderTrendChart(data.daily_trend || []);
+    renderEndpointsChart(data.top_endpoints || []);
+  } catch (e) {
+    console.error('Error loading leads summary:', e);
+  }
+}
+
+// Render Daily Acquisition Trend Chart
+function renderTrendChart(trendData) {
+  const ctx = document.getElementById('leadsTrendChart').getContext('2d');
+  if (trendChartInstance) trendChartInstance.destroy();
+
+  const labels = trendData.map(d => d.lead_date);
+  const values = trendData.map(d => d.count);
+
+  trendChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels.length ? labels : ['No Data'],
+      datasets: [{
+        label: 'Leads Created',
+        data: values.length ? values : [0],
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.12)',
+        borderWidth: 2.5,
+        fill: true,
+        tension: 0.35,
+        pointBackgroundColor: '#10b981',
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0f172a',
+          borderColor: 'rgba(16, 185, 129, 0.4)',
+          borderWidth: 1
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255, 255, 255, 0.05)' },
+          ticks: { color: '#64748b', maxTicksLimit: 10 }
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(255, 255, 255, 0.05)' },
+          ticks: { color: '#64748b', precision: 0 }
+        }
+      }
+    }
+  });
+}
+
+// Render Top Converting Endpoints Horizontal Bar Chart
+function renderEndpointsChart(endpointData) {
+  const ctx = document.getElementById('leadsEndpointsChart').getContext('2d');
+  if (endpointsChartInstance) endpointsChartInstance.destroy();
+
+  const top10 = endpointData.slice(0, 7);
+  const labels = top10.map(d => d.endpoint_url || 'Unspecified');
+  const values = top10.map(d => d.count);
+
+  endpointsChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels.length ? labels : ['No Data'],
+      datasets: [{
+        label: 'Leads Converted',
+        data: values.length ? values : [0],
+        backgroundColor: 'rgba(56, 189, 248, 0.65)',
+        hoverBackgroundColor: '#38bdf8',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0f172a',
+          borderColor: 'rgba(56, 189, 248, 0.4)',
+          borderWidth: 1
+        }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          grid: { color: 'rgba(255, 255, 255, 0.05)' },
+          ticks: { color: '#64748b', precision: 0 }
+        },
+        y: {
+          grid: { display: false },
+          ticks: {
+            color: '#94a3b8',
+            callback: function(val, index) {
+              const label = labels[index] || '';
+              return label.length > 28 ? label.substring(0, 26) + '...' : label;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// 3. Load Leads Paginated Table
+async function loadLeadsTable() {
+  const tbody = document.getElementById('leads-table-body');
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8;">
+        <div style="font-size:1.5rem;animation:spin 1s infinite linear;display:inline-block;margin-bottom:8px;">⏳</div>
+        <div>Fetching leads...</div>
+      </td>
+    </tr>
+  `;
+
+  let url = `/api/leads/list?platform=${currentPlatform}&page=${currentPage}&limit=25&days=${currentDays}`;
+  if (currentStartDate && currentEndDate) {
+    url += `&start_date=${currentStartDate}&end_date=${currentEndDate}`;
+  }
+  if (currentSearch) url += `&search=${encodeURIComponent(currentSearch)}`;
+  if (currentEndpoint) url += `&endpoint=${encodeURIComponent(currentEndpoint)}`;
+  if (currentSource) url += `&source=${encodeURIComponent(currentSource)}`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    document.getElementById('leads-count-badge').textContent = `${(data.total_records || 0).toLocaleString()} leads`;
+    document.getElementById('pagination-current-page').textContent = data.page;
+    document.getElementById('pagination-total-pages').textContent = data.total_pages;
+    document.getElementById('pagination-total-records').textContent = `${(data.total_records || 0).toLocaleString()} leads total`;
+
+    // Update pagination button states
+    document.getElementById('btn-prev-page').disabled = data.page <= 1;
+    document.getElementById('btn-next-page').disabled = data.page >= data.total_pages;
+
+    if (!data.leads || data.leads.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align:center;padding:3rem;color:#94a3b8;">
+            <div style="font-size:2rem;margin-bottom:8px;">📭</div>
+            <div style="font-weight:600;color:#f8fafc;font-size:1rem;">No leads found</div>
+            <div style="font-size:0.82rem;margin-top:4px;">Try broadening your date filter or search query</div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    let rowsHtml = '';
+    data.leads.forEach(lead => {
+      const epUrl = lead.endpoint || '/';
+      const cleanEp = epUrl.replace('https://acolyteliving.com', '');
+      const hasPhone = lead.phone_number && lead.phone_number !== 'N/A';
+      const hasEmail = lead.email && lead.email !== 'N/A';
+
+      rowsHtml += `
+        <tr>
+          <td>
+            <div style="font-weight:600;color:#f8fafc;font-size:0.92rem;">${escapeHtml(lead.full_name)}</div>
+            <div style="font-size:0.75rem;color:#64748b;font-family:monospace;">ID: #${lead.id}</div>
+          </td>
+          <td>
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              ${hasEmail ? `<div style="color:#38bdf8;font-size:0.82rem;display:flex;align-items:center;gap:4px;"><span>✉️</span> ${escapeHtml(lead.email)}</div>` : ''}
+              ${hasPhone ? `<div style="color:#94a3b8;font-size:0.8rem;display:flex;align-items:center;gap:4px;"><span>📞</span> ${escapeHtml(lead.phone_number)}</div>` : ''}
+              ${!hasEmail && !hasPhone ? `<span style="color:#64748b;">No contact info</span>` : ''}
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <a href="/page-analytics?url=${encodeURIComponent(cleanEp)}&platform=${currentPlatform}" class="lead-endpoint-badge" title="Analyze page ${cleanEp}">
+                <span>📄</span> ${escapeHtml(cleanEp)}
+              </a>
+            </div>
+          </td>
+          <td>
+            <span class="source-pill" title="${escapeHtml(lead.source)}">
+              ${escapeHtml(lead.source)}
+            </span>
+          </td>
+          <td>
+            <div style="font-size:0.82rem;color:#f1f5f9;">${lead.created_at}</div>
+          </td>
+          <td>
+            <div class="journey-status-tag journey-status-tracked" onclick="openLeadJourney(${lead.id})" title="Click to inspect visitor session">
+              <span class="status-dot"></span> Session Tracked
+            </div>
+          </td>
+          <td style="text-align:right;">
+            <button class="btn-inspect-lead" onclick="openLeadJourney(${lead.id})">
+              <span>🔍</span> Inspect Journey
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = rowsHtml;
+  } catch (e) {
+    console.error('Error loading leads list:', e);
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align:center;padding:2rem;color:#ef4444;">
+          Error loading leads table. Check database connection.
+        </td>
+      </tr>
+    `;
+  }
+}
+
+// 4. Open 360° Lead Journey & Details Modal
+async function openLeadJourney(leadId) {
+  const modal = document.getElementById('journey-modal');
+  const loading = document.getElementById('modal-loading-state');
+  const dataWrapper = document.getElementById('modal-data-wrapper');
+
+  modal.classList.add('open');
+  loading.style.display = 'block';
+  dataWrapper.style.display = 'none';
+
+  document.getElementById('modal-lead-title').textContent = `Lead #${leadId} | Journey Reconstruction`;
+
+  try {
+    const res = await fetch(`/api/leads/${leadId}/journey?platform=${currentPlatform}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    const lead = data.lead;
+    const session = data.session_metrics;
+    const device = data.client_device;
+    const ip = data.ip_location;
+    const timeline = data.journey_timeline || [];
+
+    // Populate Lead Profile Card
+    document.getElementById('modal-lead-title').textContent = `${lead.full_name} (Lead #${lead.id})`;
+    document.getElementById('modal-profile-name').textContent = lead.full_name || 'Anonymous';
+    document.getElementById('modal-profile-email').textContent = lead.email || 'N/A';
+    document.getElementById('modal-profile-phone').textContent = lead.phone_number || 'N/A';
+    
+    const epBadge = document.getElementById('modal-profile-endpoint');
+    epBadge.textContent = lead.endpoint || '/';
+    epBadge.href = `/page-analytics?url=${encodeURIComponent(lead.endpoint || '/')}&platform=${currentPlatform}`;
+    
+    document.getElementById('modal-profile-source').textContent = lead.source || 'Direct';
+    document.getElementById('modal-profile-created').textContent = lead.created_at || '--';
+    
+    const msgEl = document.getElementById('modal-profile-message');
+    if (lead.message) {
+      msgEl.textContent = lead.message;
+      document.getElementById('modal-message-container').style.display = 'block';
+    } else {
+      document.getElementById('modal-message-container').style.display = 'none';
+    }
+
+    // Populate Session Metrics
+    document.getElementById('modal-metric-session-time').textContent = session.total_session_time_formatted || '< 1s';
+    document.getElementById('modal-metric-convert-time').textContent = session.time_to_convert_formatted || '< 1s';
+    document.getElementById('modal-metric-events-count').textContent = session.total_events_count || 0;
+    document.getElementById('modal-metric-pages-count').textContent = (session.unique_pages_visited || []).length || 1;
+
+    // Populate Device & Diagnostics
+    document.getElementById('modal-device-type').textContent = `${device.device} (${device.os})`;
+    document.getElementById('modal-browser-name').textContent = device.browser;
+    document.getElementById('modal-os-name').textContent = device.os;
+
+    document.getElementById('modal-ip-address').textContent = ip.ip_address || 'Unknown';
+    document.getElementById('modal-geo-location').textContent = `${ip.city || 'Unknown'}, ${ip.region || ''} ${ip.country || ''}`.replace(/^,\s*/, '').trim() || 'Unknown';
+    document.getElementById('modal-network-isp').textContent = ip.isp || 'Telecom / Unknown';
+
+    const firstEvent = timeline[0] || {};
+    document.getElementById('modal-traffic-source').textContent = firstEvent.source_domain || lead.source || 'Direct';
+    document.getElementById('modal-referrer-url').textContent = firstEvent.referrer || 'None (Direct Navigation)';
+    document.getElementById('modal-match-strategy').textContent = session.match_strategy.replace(/_/g, ' ').toUpperCase();
+
+    // Funnel Breadcrumb Strip
+    const funnelStrip = document.getElementById('modal-funnel-strip');
+    let funnelHtml = `
+      <div class="funnel-step-badge">
+        <span>🌐 Referrer:</span> ${escapeHtml(firstEvent.referrer ? new URL(firstEvent.referrer).hostname : 'Direct')}
+      </div>
+      <span class="funnel-arrow">➔</span>
+      <div class="funnel-step-badge">
+        <span>🚀 Landing:</span> ${escapeHtml(session.landing_page)}
+      </div>
+    `;
+
+    if (session.unique_pages_visited && session.unique_pages_visited.length > 1) {
+      const intermediate = session.unique_pages_visited.filter(p => p !== session.landing_page && p !== lead.endpoint);
+      if (intermediate.length > 0) {
+        funnelHtml += `<span class="funnel-arrow">➔</span><div class="funnel-step-badge"><span>🧭 Visited:</span> ${escapeHtml(intermediate[0])}</div>`;
+      }
+    }
+
+    funnelHtml += `
+      <span class="funnel-arrow">➔</span>
+      <div class="funnel-step-badge conversion">
+        <span>🎯 Conversion Endpoint:</span> ${escapeHtml(lead.endpoint)} (${session.time_to_convert_formatted})
+      </div>
+      <span class="funnel-arrow">➔</span>
+      <div class="funnel-step-badge" style="background:rgba(99,102,241,0.2);border-color:#6366f1;color:#a5b4fc;">
+        <span>💾 Lead Stored</span>
+      </div>
+    `;
+    funnelStrip.innerHTML = funnelHtml;
+
+    // Timeline Nodes
+    const timelineEl = document.getElementById('modal-timeline-container');
+    if (!timeline || timeline.length === 0) {
+      timelineEl.innerHTML = `
+        <div style="padding:1.5rem;text-align:center;color:#94a3b8;background:rgba(18,26,45,0.4);border-radius:10px;">
+          No granular clickstream events matched for this session window.
+        </div>
+      `;
+    } else {
+      let timelineHtml = '';
+      timeline.forEach((item, i) => {
+        const isConv = item.is_conversion;
+        const evColor = isConv ? '#10b981' : (item.event_name === 'page_view' ? '#38bdf8' : (item.event_name.includes('popup') ? '#8b5cf6' : '#f59e0b'));
+
+        let eventPayloadHtml = '';
+        if (item.event_data && Object.keys(item.event_data).length > 0) {
+          eventPayloadHtml = `
+            <details style="margin-top:6px;font-size:0.75rem;">
+              <summary style="cursor:pointer;color:#94a3b8;">Event Parameters</summary>
+              <pre style="background:rgba(0,0,0,0.4);padding:6px 8px;border-radius:6px;overflow-x:auto;color:#cbd5e1;margin-top:4px;">${escapeHtml(JSON.stringify(item.event_data, null, 2))}</pre>
+            </details>
+          `;
+        }
+
+        timelineHtml += `
+          <div class="timeline-node ${isConv ? 'conversion' : ''}">
+            <div class="timeline-node-bullet">${i + 1}</div>
+            <div class="timeline-content-card">
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.72rem;font-weight:700;text-transform:uppercase;background:${evColor}20;color:${evColor};border:1px solid ${evColor}40;">
+                    ${escapeHtml(item.event_name)}
+                  </span>
+                  ${isConv ? '<span style="font-size:0.75rem;font-weight:700;color:#10b981;">🎉 CONVERSION MILESTONE</span>' : ''}
+                </div>
+                <div style="font-size:0.76rem;color:#64748b;">
+                  <span>${item.occurred_at}</span>
+                  <span style="color:#38bdf8;font-weight:600;margin-left:6px;">(${item.offset_formatted})</span>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:6px;font-size:0.84rem;color:#e2e8f0;">
+                <span style="color:#64748b;">Page:</span>
+                <code style="color:#38bdf8;font-family:monospace;background:rgba(56,189,248,0.1);padding:2px 6px;border-radius:4px;">${escapeHtml(item.page_url)}</code>
+              </div>
+
+              ${eventPayloadHtml}
+            </div>
+          </div>
+        `;
+      });
+      timelineEl.innerHTML = timelineHtml;
+    }
+
+    loading.style.display = 'none';
+    dataWrapper.style.display = 'block';
+
+  } catch (e) {
+    console.error('Error fetching lead journey details:', e);
+    loading.innerHTML = `
+      <div style="color:#ef4444;font-size:1.5rem;margin-bottom:8px;">⚠️</div>
+      <div style="font-weight:600;color:#f8fafc;">Failed to load lead journey</div>
+      <div style="font-size:0.82rem;color:#94a3b8;margin-top:4px;">${escapeHtml(e.message)}</div>
+    `;
+  }
+}
+
+function closeModal() {
+  document.getElementById('journey-modal').classList.remove('open');
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+</script>
+{% endblock %}

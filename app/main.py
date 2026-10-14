@@ -14,6 +14,7 @@ from app.scheduler import scheduler
 from app.api.analytics_routes import router as analytics_router
 from app.api.chat_routes import router as chat_router
 from app.api.chartbot_routes import router as chartbot_router
+from app.api.lead_routes import router as lead_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -66,11 +67,21 @@ templates = Jinja2Templates(directory=str(templates_path))
 app.include_router(analytics_router)
 app.include_router(chat_router)
 app.include_router(chartbot_router)
+app.include_router(lead_router)
 
 # Page Routes
 @app.get("/")
 async def root():
     return RedirectResponse(url="/reports")
+
+@app.get("/leads")
+async def leads_page(request: Request):
+    platform = request.query_params.get("platform", "startupflora")
+    return templates.TemplateResponse(
+        request=request,
+        name="leads.html",
+        context={"active_page": "leads", "platform": platform, "config": config}
+    )
 
 @app.get("/reports")
 async def reports_page(request: Request):

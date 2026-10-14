@@ -14,58 +14,60 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 
   <!-- Application Stylesheet -->
-  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/style.css?v=1.1">
   {% block extra_head %}{% endblock %}
 </head>
 <body>
 
-  <!-- Top Navigation Bar -->
-  <header class="navbar">
-    <a href="/reports" class="brand">
-      <div class="brand-icon">⚡</div>
-      <div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span class="brand-title">TrackingBot</span>
-          <span class="brand-badge">BI & AI Analytics</span>
-        </div>
-      </div>
-    </a>
-
-    <nav class="nav-links">
-      <a href="/reports" class="nav-link {% if active_page == 'reports' %}active{% endif %}">
-        <span>📊</span> Reports & Visuals
-      </a>
-      <a href="/page-analytics" class="nav-link {% if active_page == 'page-analytics' %}active{% endif %}">
-        <span>📄</span> Page Analytics
-      </a>
-      <a href="/chat" class="nav-link {% if active_page == 'chat' %}active{% endif %}">
-        <span>💬</span> AI Analyst Chatbot
-      </a>
-      <a href="/settings" class="nav-link {% if active_page == 'settings' %}active{% endif %}">
-        <span>⚙️</span> Database & Tables
-      </a>
-    </nav>
-
-    <div class="nav-actions">
-      <!-- Global Platform Dropdown Selector -->
-      <div class="nav-platform-wrapper">
-        <select id="global-platform-select" class="select-control nav-platform-select" title="Switch Website Platform">
-          <option value="living">🏢 Acolyte Living</option>
-          <option value="startupflora">🌸 StartupFlora</option>
-        </select>
-      </div>
-
-      <div class="status-pill" id="global-db-status" title="Active Database Connection">
-        <span class="status-dot"></span>
-        <span id="db-status-label">Acolyte Living (PG)</span>
-      </div>
-    </div>
-  </header>
-
   <!-- Main Content Area -->
-  <main class="main-content">
+  <main class="main-content {% if active_page == 'chat' %}chat-main-container{% endif %}">
     {% block content %}{% endblock %}
   </main>
+
+  <!-- Universal Floating Bottom Dock Navigation (All Pages) -->
+  <nav class="ai-floating-dock" id="ai-floating-dock" aria-label="Main Navigation">
+    <a href="/reports" class="ai-dock-btn {% if active_page == 'reports' %}active{% endif %}" title="Reports & Visuals">
+      <span class="ai-dock-icon">📊</span>
+      <span>Reports</span>
+    </a>
+
+    <a href="/leads" class="ai-dock-btn {% if active_page == 'leads' %}active{% endif %}" title="Leads & Journeys">
+      <span class="ai-dock-icon">🎯</span>
+      <span>Leads</span>
+    </a>
+
+    <!-- Central Raised Glowing AI Orb -->
+    {% if active_page == 'chat' %}
+    <button type="button" class="ai-dock-center-orb active" id="btn-dock-ai" title="AI Voice / Focus Chat">
+      AI
+    </button>
+    {% else %}
+    <a href="/chat" class="ai-dock-center-orb" id="btn-dock-ai" title="AI Analyst Chatbot">
+      AI
+    </a>
+    {% endif %}
+
+    <a href="/page-analytics" class="ai-dock-btn {% if active_page == 'page-analytics' %}active{% endif %}" title="Page Analytics">
+      <span class="ai-dock-icon">📄</span>
+      <span>Pages</span>
+    </a>
+
+    <a href="/settings" class="ai-dock-btn {% if active_page == 'settings' %}active{% endif %}" title="Database & Tables">
+      <span class="ai-dock-icon">⚙️</span>
+      <span>Schema</span>
+    </a>
+  </nav>
+
+  <!-- Hidden Platform Selector for JS Compatibility across all pages -->
+  <div style="display:none;" aria-hidden="true">
+    <select id="global-platform-select">
+      <option value="living">🏢 Acolyte Living</option>
+      <option value="startupflora">🌸 StartupFlora</option>
+    </select>
+    <div id="global-db-status">
+      <span id="db-status-label">Acolyte Living (PG)</span>
+    </div>
+  </div>
 
   <script src="/static/js/common.js"></script>
   {% block scripts %}{% endblock %}

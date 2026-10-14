@@ -1,83 +1,313 @@
 {% extends "base.html" %}
 
-{% block title %}AI Analyst Chatbot | TrackingBot Analytics{% endblock %}
+{% block title %}AI Analyst Chatbot | TrackingBot Futuristic BI{% endblock %}
+
+{% block extra_head %}
+<!-- Futuristic AI Assistant Cyberpunk Stylesheet -->
+<link rel="stylesheet" href="/static/css/ai_assistant.css">
+{% endblock %}
 
 {% block content %}
-<div class="chat-layout">
-  <!-- Left Sidebar: Quick Prompts & Context -->
-  <aside class="chat-sidebar">
-    <!-- Website Selector in Chat -->
-    <div style="margin-bottom:1.5rem;">
-      <h4 class="sidebar-title">🌐 Select Website</h4>
-      <div class="website-btn-group" style="width:100%;display:flex;flex-direction:column;gap:8px;margin-top:10px;">
-        <button class="website-choice-btn active" data-platform="living" id="chat-choice-living" style="width:100%;">
-          <span class="site-icon">🏢</span>
-          <div class="site-info-text">
-            <span class="site-name">Acolyte Living</span>
-            <span class="site-tag">PostgreSQL (647k+ events)</span>
+<div class="ai-dashboard-wrapper">
+  <!-- Subtle Animated Cosmic Starfield -->
+  <div class="ai-starfield"></div>
+
+  <!-- Futuristic Cyber Holographic Girl Background with Neon Glow Aura -->
+  <div class="ai-hologram-backdrop" aria-hidden="true">
+    <div class="ai-glow-orb ai-glow-cyan"></div>
+    <div class="ai-glow-orb ai-glow-purple"></div>
+    <div class="ai-glow-orb ai-glow-magenta"></div>
+    <div class="ai-model-stage">
+      <img src="/static/images/ai_avatar.jpg" alt="Futuristic AI Neural Model" class="ai-bg-girl-model" />
+      <div class="ai-model-radial-fade"></div>
+      <div class="ai-model-scanline"></div>
+    </div>
+  </div>
+
+  <!-- 2-Column Balanced Dashboard Layout -->
+  <div class="ai-chat-layout-grid">
+
+    <!-- ==================================================================== -->
+    <!-- LEFT SIDEBAR: AI Identity, Real DB Switcher, Prompts & Telemetry     -->
+    <!-- ==================================================================== -->
+    <aside class="ai-sidebar-col">
+      
+      <!-- 1. AI Identity Card -->
+      <div class="ai-glass-card">
+        <div class="ai-identity-banner">
+          <div class="ai-avatar-thumb-orb">
+            <img src="/static/images/ai_avatar.jpg" alt="AI Analyst Avatar" class="ai-avatar-thumb-img" />
           </div>
-        </button>
-        <button class="website-choice-btn" data-platform="startupflora" id="chat-choice-startupflora" style="width:100%;">
-          <span class="site-icon">🌸</span>
-          <div class="site-info-text">
-            <span class="site-name">StartupFlora</span>
-            <span class="site-tag">MySQL (391k+ events)</span>
+          <div>
+            <h2 class="ai-identity-text-title">TrackingBot AI</h2>
+            <div class="ai-identity-badge">
+              <span class="ai-pulse-dot"></span> Live Warehouse Neural Engine
+            </div>
           </div>
-        </button>
-      </div>
-    </div>
-
-    <div>
-      <h4 class="sidebar-title">⚡ Quick Analysis Prompts</h4>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
-        <button class="preset-chip">📉 When is user traffic lowest?</button>
-        <button class="preset-chip">🔥 What are our peak active hours?</button>
-        <button class="preset-chip">🌐 Show multi-website traffic distribution</button>
-        <button class="preset-chip">📊 Compare Sunday vs Wednesday activity</button>
-        <button class="preset-chip">📄 What are the top 5 visited pages?</button>
-        <button class="preset-chip">⚡ Break down conversion events</button>
-      </div>
-    </div>
-
-    <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border-subtle);">
-      <h4 class="sidebar-title">🗄️ Active Database Context</h4>
-      <p id="chat-db-context-desc" style="font-size:0.78rem;color:var(--text-dim);margin-top:6px;line-height:1.4;">
-        Directly querying PostgreSQL <code>tracking_events</code> with multi-website support.
-      </p>
-    </div>
-  </aside>
-
-  <!-- Right: Chat Console -->
-  <section class="chat-main">
-    <div id="chat-feed" class="chat-feed">
-      <!-- Welcome Message -->
-      <div class="chat-message bot">
-        <div class="chat-avatar bot">🤖</div>
-        <div class="chat-bubble">
-          <h3 style="font-size:1.05rem;color:#fff;margin-bottom:6px;">Hello! I am your AI Analytics Assistant.</h3>
-          <p style="margin-bottom:8px;">
-            I have direct access to your tracking database. I can answer complex questions about user traffic, analyze low/peak periods, compare multiple websites, and return visual charts or exact SQL queries.
-          </p>
-          <p style="font-size:0.85rem;color:#94a3b8;">
-            Try asking: <strong>"Which time period has the lowest user traffic?"</strong> or click any prompt on the left.
-          </p>
         </div>
       </div>
-    </div>
 
-    <!-- Chat Input Bar -->
-    <div class="chat-input-area">
-      <input 
-        type="text" 
-        id="chat-input" 
-        class="chat-input" 
-        placeholder="Ask anything about your tracking data (e.g., when are users lowest, top pages, site comparison)..." 
-      />
-      <button id="btn-send-chat" class="btn-send">
-        <span>Send</span> ➔
-      </button>
-    </div>
-  </section>
+      <!-- 2. Real Database Warehouse Switcher -->
+      <div class="ai-glass-card">
+        <div class="ai-card-header-row">
+          <span class="ai-card-title-sm">🌐 Target Database Warehouse</span>
+          <span style="font-size:0.72rem;color:var(--ai-cyan);font-weight:600;" id="sidebar-db-status">Active</span>
+        </div>
+
+        <div class="ai-db-switcher-group">
+          <!-- Choice 1: Acolyte Living (PG) -->
+          <button class="ai-db-card-btn active" data-platform="living" id="btn-db-living">
+            <div class="ai-db-left">
+              <span class="ai-db-icon">🏢</span>
+              <div>
+                <div class="ai-db-title">Acolyte Living</div>
+                <div class="ai-db-sub">PostgreSQL • 653k+ events</div>
+              </div>
+            </div>
+            <span class="ai-db-indicator"></span>
+          </button>
+
+          <!-- Choice 2: StartupFlora (MySQL) -->
+          <button class="ai-db-card-btn" data-platform="startupflora" id="btn-db-startupflora">
+            <div class="ai-db-left">
+              <span class="ai-db-icon">🌸</span>
+              <div>
+                <div class="ai-db-title">StartupFlora</div>
+                <div class="ai-db-sub">MySQL • 395k+ events</div>
+              </div>
+            </div>
+            <span class="ai-db-indicator"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. Real Analytical Intelligence Prompts -->
+      <div class="ai-glass-card">
+        <div class="ai-card-header-row">
+          <span class="ai-card-title-sm">⚡ Quick Analytical Prompts</span>
+          <span style="font-size:0.7rem;color:#94a3b8;">Click to run</span>
+        </div>
+
+        <div class="ai-prompts-list">
+          <button class="ai-prompt-pill" data-prompt="Which time period has the lowest user traffic?">
+            <span>📉 Lowest user traffic dead zones?</span>
+            <span>›</span>
+          </button>
+          <button class="ai-prompt-pill" data-prompt="What are our peak active hours?">
+            <span>🔥 What are our peak active hours?</span>
+            <span>›</span>
+          </button>
+          <button class="ai-prompt-pill" data-prompt="What are the top 5 visited pages?">
+            <span>📄 Top 5 most visited pages?</span>
+            <span>›</span>
+          </button>
+          <button class="ai-prompt-pill" data-prompt="Show multi-website traffic distribution">
+            <span>🌐 Multi-website traffic distribution</span>
+            <span>›</span>
+          </button>
+          <button class="ai-prompt-pill" data-prompt="Break down conversion events (pageviews vs clicks)">
+            <span>🎯 Breakdown of conversion events</span>
+            <span>›</span>
+          </button>
+          <button class="ai-prompt-pill" data-prompt="Compare Sunday vs Wednesday user activity">
+            <span>📊 Compare Sunday vs Wednesday</span>
+            <span>›</span>
+          </button>
+          <button class="ai-prompt-pill" data-prompt="Give me a 30-day executive performance summary">
+            <span>📑 30-day executive report summary</span>
+            <span>›</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4. Real Warehouse Telemetry & Navigation -->
+      <div class="ai-glass-card">
+        <div class="ai-card-header-row">
+          <span class="ai-card-title-sm">🗄️ Warehouse Telemetry</span>
+          <span style="font-size:0.72rem;color:#34d399;">● Online</span>
+        </div>
+
+        <div class="ai-telemetry-grid">
+          <div class="ai-telemetry-box">
+            <div class="ai-telemetry-label">Active Warehouse</div>
+            <div class="ai-telemetry-val" id="telemetry-db-name" style="font-size:0.82rem;">PostgreSQL</div>
+          </div>
+          <div class="ai-telemetry-box">
+            <div class="ai-telemetry-label">Events Tracked</div>
+            <div class="ai-telemetry-val" id="telemetry-events-count">653,093</div>
+          </div>
+          <div class="ai-telemetry-box">
+            <div class="ai-telemetry-label">AI Engine Mode</div>
+            <div class="ai-telemetry-val" style="font-size:0.78rem;color:#c084fc;">GPT-4o + SQL</div>
+          </div>
+          <div class="ai-telemetry-box">
+            <div class="ai-telemetry-label">Peak Slot</div>
+            <div class="ai-telemetry-val" style="font-size:0.82rem;color:#fbbf24;">12:00 - 20:00</div>
+          </div>
+        </div>
+
+        <div class="ai-nav-shortcuts">
+          <a href="/leads" class="ai-nav-shortcut-link">
+            <span>🎯 Lead Journey Tracker</span>
+            <span>›</span>
+          </a>
+          <a href="/page-analytics" class="ai-nav-shortcut-link">
+            <span>📄 Page Deep Dive Suite</span>
+            <span>›</span>
+          </a>
+          <a href="/reports" class="ai-nav-shortcut-link">
+            <span>📊 Reports & Heatmaps</span>
+            <span>›</span>
+          </a>
+          <a href="/settings" class="ai-nav-shortcut-link">
+            <span>⚙️ Database Schema Inspector</span>
+            <span>›</span>
+          </a>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ==================================================================== -->
+    <!-- MAIN CHAT CONSOLE: Hologram Bar, Full Feed, Voice Mic & Fast Actions -->
+    <!-- ==================================================================== -->
+    <main class="ai-chat-main-stage">
+      
+      <!-- Top Hologram Status Strip -->
+      <div class="ai-hologram-topbar">
+        <div class="ai-topbar-left">
+          <div class="ai-topbar-avatar">
+            <img src="/static/images/ai_avatar.jpg" alt="AI Avatar Thumbnail" />
+          </div>
+          <div class="ai-topbar-text-wrap">
+            <div class="ai-topbar-title">
+              <span>TRACKINGBOT AI ASSISTANT</span>
+              <span class="ai-pulse-dot"></span>
+            </div>
+            <div class="ai-topbar-speech" id="ai-speech-status">
+              Ready to query tracking warehouse. Ask about dead zones, top pages, or lead conversions.
+            </div>
+          </div>
+        </div>
+
+        <div class="ai-topbar-actions">
+          <span class="brand-badge" id="topbar-platform-badge" style="font-size:0.76rem;padding:4px 10px;">
+            🏢 Acolyte Living (PG)
+          </span>
+          <button class="btn-glass-action" id="btn-clear-chat" title="Clear chat session">
+            <span>🔄</span> Clear
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Chat Feed Box -->
+      <div class="ai-chat-console-card">
+        
+        <div class="ai-chat-feed" id="chat-feed">
+          
+          <!-- Welcoming Message from TrackingBot AI -->
+          <div class="ai-msg-row bot">
+            <div class="ai-msg-avatar bot">AI</div>
+            <div class="ai-msg-bubble">
+              <h3 style="font-size:1.05rem;color:#00f0ff;margin:0 0 6px 0;font-family:var(--font-heading);">
+                Hello! I am your TrackingBot AI Analytics Assistant.
+              </h3>
+              <p style="margin-bottom:8px;color:#e2e8f0;">
+                I have direct real-time access to your tracking database. I can identify your lowest user traffic dead zones, pinpoint peak active hours, compare multiple websites, and generate live charts or exact SQL queries.
+              </p>
+              <div style="font-size:0.82rem;color:#94a3b8;background:rgba(0,0,0,0.3);padding:8px 12px;border-radius:8px;border-left:3px solid var(--ai-cyan);">
+                Try typing or speaking: <strong>"When is user traffic lowest?"</strong> or select any quick prompt on the left.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Quick Follow-up Chips -->
+        <div class="ai-chips-flow" id="chat-chips-flow">
+          <button class="ai-quick-chip-btn" data-prompt="Which time period has the lowest user traffic?">📉 Lowest Traffic</button>
+          <button class="ai-quick-chip-btn" data-prompt="What are our peak active hours?">🔥 Peak Hours</button>
+          <button class="ai-quick-chip-btn" data-prompt="What are the top 5 visited pages?">📄 Top 5 Pages</button>
+          <button class="ai-quick-chip-btn" data-prompt="Show multi-website traffic distribution">🌐 Traffic Channels</button>
+          <button class="ai-quick-chip-btn" data-prompt="Show recent lead conversion trends">🎯 Lead Conversions</button>
+        </div>
+
+        <!-- Voice Visualizer, Mic Orb & Chat Input Console -->
+        <div class="ai-input-console-section">
+          
+          <!-- Integrated Flanking Voice Wave Visualizer & Glowing Mic Orb -->
+          <div class="ai-voice-strip" id="ai-voice-strip">
+            <div class="ai-audio-wave-flank">
+              <div class="ai-audio-freq-bar"></div>
+              <div class="ai-audio-freq-bar"></div>
+              <div class="ai-audio-freq-bar"></div>
+              <div class="ai-audio-freq-bar"></div>
+              <div class="ai-audio-freq-bar"></div>
+            </div>
+
+            <!-- Glowing Concentric Mic Orb -->
+            <div class="ai-voice-mic-orb" id="btn-voice-mic" title="Click to speak your analytical question">
+              <span class="ai-mic-icon-svg">🎙️</span>
+            </div>
+
+            <div class="ai-audio-wave-flank">
+              <div class="ai-audio-freq-bar"></div>
+              <div class="ai-audio-freq-bar"></div>
+              <div class="ai-audio-freq-bar"></div>
+              <div class="ai-audio-freq-bar"></div>
+              <div class="ai-audio-freq-bar"></div>
+            </div>
+          </div>
+
+          <div class="ai-voice-indicator-text" id="voice-indicator-text">
+            Click microphone to speak or type your question below
+          </div>
+
+          <!-- Futuristic Input Bar -->
+          <div class="ai-chat-input-wrapper">
+            <span style="color:#64748b;font-size:1.15rem;margin-left:2px;cursor:pointer;" id="btn-input-mic-trigger" title="Voice dictation">🎙️</span>
+            <input 
+              type="text" 
+              id="chat-input" 
+              class="ai-chat-input-field" 
+              placeholder="Ask anything about your tracking data (e.g. lowest traffic dead zones, peak hours, top pages)..."
+              autocomplete="off"
+            />
+            <button id="btn-send-chat" class="ai-chat-send-btn" title="Send analytical query">
+              ➔
+            </button>
+          </div>
+
+          <!-- Analytical Action Pills -->
+          <div class="ai-action-pills-row">
+            <button class="ai-action-pill" data-prompt="Which time period has the lowest user traffic?">
+              <span>📉</span> Dead Zones
+            </button>
+            <button class="ai-action-pill" data-prompt="What are our peak active hours?">
+              <span>🔥</span> Peak Hours
+            </button>
+            <button class="ai-action-pill" data-prompt="What are the top 5 visited pages?">
+              <span>📄</span> Top Pages
+            </button>
+            <button class="ai-action-pill" data-prompt="Break down conversion events (pageviews vs clicks)">
+              <span>🎯</span> Conversions
+            </button>
+            <button class="ai-action-pill" data-prompt="Show multi-website traffic distribution">
+              <span>🌐</span> Multi-Site
+            </button>
+            <button class="ai-action-pill" data-prompt="Show me the SQL query used to calculate daily active users and top pages">
+              <span>⌨️</span> SQL Query
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
 </div>
 {% endblock %}
 

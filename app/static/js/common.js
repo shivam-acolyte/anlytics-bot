@@ -48,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
         switchChatPlatform(p);
       } else if (typeof switchSettingsPlatform === 'function') {
         switchSettingsPlatform(p);
+      } else if (typeof switchLeadPlatform === 'function') {
+        switchLeadPlatform(p);
       } else {
         window.location.reload();
       }

@@ -34,8 +34,12 @@ async def lifespan(app: FastAPI):
     else:
         logger.error(f"Database connection error: {status.get('error')}")
 
-    # Start background scheduler for daily refresh
-    scheduler.start()
+    # Start background scheduler for daily refresh (skip in serverless Vercel environment)
+    if not os.getenv("VERCEL"):
+        try:
+            scheduler.start()
+        except Exception as e:
+            logger.warning(f"Scheduler start skipped: {e}")
     yield
     # Shutdown
     logger.info("Shutting down TrackingBot...")

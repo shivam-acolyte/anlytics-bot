@@ -22,10 +22,11 @@ class Database:
                     user=config.DB_USER,
                     password=config.DB_PASSWORD,
                     dbname=config.DB_NAME,
-                    connect_timeout=10
+                    connect_timeout=3
                 )
                 logger.info("Connected to PostgreSQL connection pool successfully.")
             except Exception as e:
+                cls._pool = None
                 logger.error(f"Failed to initialize PostgreSQL pool: {e}")
                 raise e
         return cls._pool
@@ -46,7 +47,10 @@ class Database:
             logger.error(f"Error executing query: {sql} | Error: {e}")
             raise e
         finally:
-            pool_inst.putconn(conn)
+            try:
+                pool_inst.putconn(conn)
+            except Exception:
+                pass
 
     @classmethod
     def execute_one(cls, sql: str, params: Optional[tuple] = None) -> Optional[Dict[str, Any]]:

@@ -169,47 +169,99 @@ def fetch_utms(platform: str, days: int):
 
 @st.cache_data(ttl=60)
 def fetch_overview_kpis(platform: str, site: Optional[str], days: int, start_date: Optional[str], end_date: Optional[str]):
-    return analytics_service.get_kpis(site=site, days=days, platform=platform, start_date=start_date, end_date=end_date)
+    try:
+        return analytics_service.get_kpis(site=site, days=days, platform=platform, start_date=start_date, end_date=end_date)
+    except Exception as e:
+        logger.error(f"Error fetching overview KPIs for {platform}: {e}")
+        return {
+            "total_events": 0, "unique_users": 0, "total_sessions": 0, "events_trend": 0.0,
+            "dead_zone": {"hour": None, "day": None, "lowest_users": 0},
+            "peak_hour": None, "peak_day": None,
+            "lowest_hour_slot": "N/A", "lowest_hour_users": 0, "lowest_day": "N/A", "lowest_day_users": 0,
+            "dead_zone_window": "N/A", "peak_window": "N/A",
+            "time_range": {"earliest": None, "latest": None},
+            "error": str(e)
+        }
 
 @st.cache_data(ttl=60)
 def fetch_daily_trends(platform: str, site: Optional[str], days: int, start_date: Optional[str], end_date: Optional[str]):
-    return analytics_service.get_daily_trends(site=site, days=days, platform=platform, start_date=start_date, end_date=end_date)
+    try:
+        return analytics_service.get_daily_trends(site=site, days=days, platform=platform, start_date=start_date, end_date=end_date)
+    except Exception as e:
+        logger.error(f"Error fetching daily trends for {platform}: {e}")
+        return {"dates": [], "events": [], "users": [], "sessions": [], "error": str(e)}
 
 @st.cache_data(ttl=60)
 def fetch_heatmap(platform: str, site: Optional[str], days: int, start_date: Optional[str], end_date: Optional[str]):
-    return analytics_service.get_hourly_heatmap(site=site, days=days, platform=platform, start_date=start_date, end_date=end_date)
+    try:
+        return analytics_service.get_hourly_heatmap(site=site, days=days, platform=platform, start_date=start_date, end_date=end_date)
+    except Exception as e:
+        logger.error(f"Error fetching heatmap for {platform}: {e}")
+        return {"matrix": [], "days": [], "hours": [], "max_val": 0, "lowest_slot": None, "peak_slot": None}
 
 @st.cache_data(ttl=60)
 def fetch_top_pages(platform: str, site: Optional[str], days: int, limit: int = 15, start_date: Optional[str] = None, end_date: Optional[str] = None):
-    return analytics_service.get_top_pages(site=site, days=days, limit=limit, platform=platform, start_date=start_date, end_date=end_date)
+    try:
+        return analytics_service.get_top_pages(site=site, days=days, limit=limit, platform=platform, start_date=start_date, end_date=end_date)
+    except Exception as e:
+        logger.error(f"Error fetching top pages for {platform}: {e}")
+        return []
 
 @st.cache_data(ttl=60)
 def fetch_geo_and_referrers(platform: str, site: Optional[str], days: int, start_date: Optional[str], end_date: Optional[str]):
-    return analytics_service.get_geo_and_referrers(site=site, days=days, platform=platform, start_date=start_date, end_date=end_date)
+    try:
+        return analytics_service.get_geo_and_referrers(site=site, days=days, platform=platform, start_date=start_date, end_date=end_date)
+    except Exception as e:
+        logger.error(f"Error fetching geo & referrers for {platform}: {e}")
+        return {"top_referrers": [], "top_countries": [], "top_cities": []}
 
 @st.cache_data(ttl=60)
 def fetch_page_deep_dive(page_url: str, platform: str, days: int, site: Optional[str] = None, start_date: Optional[str] = None, end_date: Optional[str] = None):
-    return analytics_service.get_page_deep_dive(page_url=page_url, site=site, days=days, platform=platform, start_date=start_date, end_date=end_date)
+    try:
+        return analytics_service.get_page_deep_dive(page_url=page_url, site=site, days=days, platform=platform, start_date=start_date, end_date=end_date)
+    except Exception as e:
+        logger.error(f"Error fetching page deep dive for {platform}: {e}")
+        return {"error": str(e), "total_views": 0, "unique_users": 0}
 
 @st.cache_data(ttl=60)
 def fetch_granular_timeline(granularity: str, platform: str, days: int, site: Optional[str] = None, page_url: Optional[str] = None, start_date: Optional[str] = None, end_date: Optional[str] = None):
-    return analytics_service.get_granular_analysis(granularity=granularity, site=site, days=days, page_url=page_url, platform=platform, start_date=start_date, end_date=end_date)
+    try:
+        return analytics_service.get_granular_analysis(granularity=granularity, site=site, days=days, page_url=page_url, platform=platform, start_date=start_date, end_date=end_date)
+    except Exception as e:
+        logger.error(f"Error fetching granular timeline for {platform}: {e}")
+        return {"data": [], "granularity": granularity}
 
 @st.cache_data(ttl=30)
 def fetch_leads_summary(platform: str, days: int, start_date: Optional[str] = None, end_date: Optional[str] = None):
-    return lead_service.get_leads_summary(platform=platform, days=days, start_date=start_date, end_date=end_date)
+    try:
+        return lead_service.get_leads_summary(platform=platform, days=days, start_date=start_date, end_date=end_date)
+    except Exception as e:
+        logger.error(f"Error fetching leads summary for {platform}: {e}")
+        return {"total_leads": 0, "avg_events_per_lead": 0, "avg_journey_time_mins": 0, "top_endpoints": []}
 
 @st.cache_data(ttl=30)
 def fetch_leads_list(platform: str, page: int, limit: int, search: Optional[str], endpoint: Optional[str], source: Optional[str], days: int, start_date: Optional[str] = None, end_date: Optional[str] = None):
-    return lead_service.get_leads_list(platform=platform, page=page, limit=limit, search=search, endpoint=endpoint, source=source, days=days, start_date=start_date, end_date=end_date)
+    try:
+        return lead_service.get_leads_list(platform=platform, page=page, limit=limit, search=search, endpoint=endpoint, source=source, days=days, start_date=start_date, end_date=end_date)
+    except Exception as e:
+        logger.error(f"Error fetching leads list for {platform}: {e}")
+        return {"leads": [], "total": 0, "page": page, "total_pages": 0}
 
 @st.cache_data(ttl=30)
 def fetch_lead_journey(lead_id: int, platform: str):
-    return lead_service.get_lead_journey_and_details(lead_id=lead_id, platform=platform)
+    try:
+        return lead_service.get_lead_journey_and_details(lead_id=lead_id, platform=platform)
+    except Exception as e:
+        logger.error(f"Error fetching lead journey for {platform}: {e}")
+        return None
 
 @st.cache_data(ttl=60)
 def fetch_lead_endpoints(platform: str, days: int):
-    return lead_service.get_lead_endpoints(platform=platform, days=days)
+    try:
+        return lead_service.get_lead_endpoints(platform=platform, days=days)
+    except Exception as e:
+        logger.error(f"Error fetching lead endpoints for {platform}: {e}")
+        return []
 
 
 # ==============================================================================
@@ -226,14 +278,30 @@ with st.sidebar:
         </div>
     """, unsafe_allow_html=True)
 
-    # 1. Platform Selector
+    # 1. Platform Selector (Auto-detect availability)
+    try:
+        platforms_meta = fetch_platforms_status()
+        living_p = next((p for p in platforms_meta.get("platforms", []) if p.get("id") == "living"), None)
+        living_available = bool(living_p and living_p.get("health", {}).get("status") == "connected")
+    except Exception:
+        living_available = False
+
+    default_idx = 0 if living_available else 1
+
     platform_option = st.selectbox(
         "🏢 Database Platform",
         options=["living", "startupflora"],
         format_func=lambda x: "🏢 Acolyte Living (PostgreSQL)" if x == "living" else "🌸 StartupFlora (MySQL)",
-        index=0,
+        index=default_idx,
         help="Select the database instance to query analytics from."
     )
+
+    if platform_option == "living" and not living_available:
+        st.warning(
+            "⚠️ **Acolyte Living (PostgreSQL) is unreachable.**\n\n"
+            "- If running on Streamlit Cloud, add your PostgreSQL connection credentials to **Streamlit Secrets** under `[postgres]` (`host`, `user`, `password`, `database`).\n"
+            "- Or switch to **🌸 StartupFlora (MySQL)** in the platform selector above."
+        )
 
     # 2. Page Navigation
     page_selection = st.radio(
